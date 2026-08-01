@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AXM Local Game Hub</title>
+  <meta name="description" content="A small experimental local game-night launcher with QR phone controllers and no account or internet requirement.">
+  <link rel="stylesheet" href="styles.css">
+  <script src="vendor/qrcode.js"></script>
+</head>
+<body>
+  <a class="skip" href="#games">Skip to games</a>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="AXM Local Game Hub home"><span>AXM</span><b>LOCAL GAME HUB</b></a>
+    <div class="top-status"><i></i><span id="hubMode">CHECKING LOCAL ENGINE</span></div>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="heroTitle">
+      <div>
+        <p class="eyebrow">EXPERIMENTAL · PROOF OF START</p>
+        <h1 id="heroTitle">Pick a game.<br><em>Play together locally.</em></h1>
+        <p class="lead">One host computer, phones as visible controllers, and no account, subscription, analytics or internet service between your family and the game.</p>
+        <div class="promise-row" aria-label="Local Game Hub promises">
+          <span>NO ACCOUNT</span><span>NO INTERNET REQUIRED</span><span>QR CONTROLLERS</span><span>ONE ACTIVE GAME</span>
+        </div>
+      </div>
+      <aside class="join-card" aria-labelledby="joinTitle">
+        <div class="join-copy">
+          <p class="eyebrow">GAME NIGHT DOOR</p>
+          <h2 id="joinTitle">Same Wi-Fi, visible seats.</h2>
+          <p id="joinExplanation">Start LAN Game Night to let phones scan and join. Local mode stays on this computer.</p>
+          <a id="hubAddress" href="/">Checking address…</a>
+        </div>
+        <div class="qr-box" id="hubQr" aria-label="Game Hub join QR code"><span>QR</span></div>
+      </aside>
+    </section>
+
+    <section class="shelf" id="games" aria-labelledby="gamesTitle">
+      <div class="section-head">
+        <div><p class="eyebrow">STARTER SHELF</p><h2 id="gamesTitle">Current proof-of-concept games</h2></div>
+        <p>Every original status remains visible. These games can improve without reinstalling the full Workshop.</p>
+      </div>
+      <div class="game-grid" id="gameGrid" aria-live="polite"><p class="loading">Reading the local catalog…</p></div>
+    </section>
+
+    <section class="runtime" id="runtimePanel" aria-labelledby="runtimeTitle" hidden>
+      <div class="runtime-head">
+        <div><p class="eyebrow">LOCAL RUN ENGINE</p><h2 id="runtimeTitle">Game ready</h2><p id="runtimeDescription"></p></div>
+        <div class="runtime-actions"><a class="button primary" id="playGame" href="#" target="_blank" rel="noopener">Open shared game screen</a><button class="button danger" id="stopGame" type="button">Stop game</button></div>
+      </div>
+      <div class="controller-intro">
+        <h3>Scan one seat per phone</h3>
+        <p id="controllerExplanation">Each QR opens only that visible player seat. A screen never silently becomes a player.</p>
+      </div>
+      <div class="controller-grid" id="controllerGrid"></div>
+    </section>
+
+    <section class="truth" aria-labelledby="truthTitle">
+      <p class="eyebrow">HONEST BOUNDARY</p>
+      <h2 id="truthTitle">The concept is real. The games still need work.</h2>
+      <p>This distribution proves that Game Hub, a local run engine, game packages and QR controls can leave the larger platform and remain understandable. Physical-phone testing and low-end hardware performance still need real families and real devices.</p>
+    </section>
+  </main>
+
+  <footer><span>AXM Local Game Hub · EXPERIMENTAL</span><span>Files and play stay on your machines.</span></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
+

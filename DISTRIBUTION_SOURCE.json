@@ -1,0 +1,93 @@
+{
+  "schema": "axm.focused-distribution/v1",
+  "id": "axm-local-game-hub",
+  "name": "AXM Local Game Hub",
+  "version": "0.1.0-proof-of-start",
+  "status": "EXPERIMENTAL",
+  "target_repository": "axm-local-game-hub",
+  "promise": "One small local launcher, visible QR controllers, no account, no subscription and no internet requirement.",
+  "audience": [
+    "families",
+    "local game-night hosts",
+    "players with phones as controllers",
+    "offline and low-cost setups"
+  ],
+  "runtime": {
+    "engine": "Node.js built-ins only",
+    "minimum_node_major": 18,
+    "default_hub_port": 8890,
+    "default_game_port_base": 8900,
+    "internet_required": false,
+    "account_required": false,
+    "telemetry": false,
+    "active_game_limit": 1
+  },
+  "shared_sources": [
+    {
+      "source": "tools/game-hub/vendor/qrcode.js",
+      "destination": "vendor/qrcode.js"
+    },
+    {
+      "source": "tools/game-hub/vendor/QRCODE_GENERATOR_NOTICE.txt",
+      "destination": "vendor/QRCODE_GENERATOR_NOTICE.txt"
+    }
+  ],
+  "games": [
+    {
+      "source": "tools/game-hub/game-library/006-lumenwake",
+      "include": [
+        "game.manifest.json",
+        "README.md",
+        "ASSET_LICENSES.md",
+        "runtime"
+      ],
+      "port_offset": 6,
+      "play_path": "/?room=AXM1&player=screen",
+      "controller_path": "/?room=AXM1&player={player}",
+      "default_human_seats": 4,
+      "starter_reason": "Tiny cooperative game-night build with keyboard, touch and phone control."
+    },
+    {
+      "source": "tools/game-hub/game-library/002-robo-pong",
+      "include": [
+        "game.manifest.json",
+        "README.md",
+        "runtime"
+      ],
+      "port_offset": 2,
+      "play_path": "/?room=AXM1&player=screen",
+      "controller_path": "/?room=AXM1&player={player}",
+      "default_human_seats": 2,
+      "starter_reason": "Familiar Pong entry point for solo, two-player co-op or local 1v1 with phone controls."
+    },
+    {
+      "source": "tools/game-hub/game-library/003-robo-pong-cross",
+      "include": [
+        "game.manifest.json",
+        "README.md",
+        "AI_NATIVE_SEAT_CONTRACT.md",
+        "runtime"
+      ],
+      "port_offset": 3,
+      "play_path": "/?room=AXM1&player=screen",
+      "controller_path": "/?room=AXM1&player={player}",
+      "default_human_seats": 4,
+      "starter_reason": "Three- or four-player Pong with competitive and shared-core co-op modes plus QR phone seats."
+    },
+    {
+      "source": "tools/game-hub/game-library/012-pulse-choir",
+      "include": [
+        "game.manifest.json",
+        "README_FIRST.md",
+        "KNOWN_LIMITS.md",
+        "ASSET_PROVENANCE.md",
+        "runtime"
+      ],
+      "port_offset": 12,
+      "play_path": "/games/012/?room=AXM1&player=screen",
+      "controller_path": "/controller.html?room=AXM1&player={player}",
+      "default_human_seats": 4,
+      "starter_reason": "Local cooperative rhythm game built around shared-screen play and QR controllers."
+    }
+  ]
+}

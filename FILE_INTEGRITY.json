@@ -1,0 +1,513 @@
+{
+  "schema": "axm.file-integrity/v1",
+  "algorithm": "sha256",
+  "distribution": "axm-local-game-hub",
+  "version": "0.1.0-proof-of-start",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 20,
+      "sha256": "53bd72599f9e8cbed776d070e723b4333192ca7b3a3a55c199f7a02f854b923b"
+    },
+    {
+      "path": "app.js",
+      "bytes": 7195,
+      "sha256": "ad035ee59625935d8661ad989fb81cef84c916cd730828691d5166b31cc7953c"
+    },
+    {
+      "path": "BUILD_RECEIPT.json",
+      "bytes": 1263,
+      "sha256": "91b470ce89468d94a03c7e77d4d52f58258df225c8a94c9f488568798b44583c"
+    },
+    {
+      "path": "catalog.json",
+      "bytes": 4424,
+      "sha256": "9c6d44291958794f01d138a92fa5d3c0bab15e9187afbd6c235432c705df0857"
+    },
+    {
+      "path": "DISTRIBUTION_SOURCE.json",
+      "bytes": 2970,
+      "sha256": "e319122bc164a24e54a31bf08f5bef02ea2892c13ee0ba97671fcb66d80a34d1"
+    },
+    {
+      "path": "games/002-robo-pong/game.manifest.json",
+      "bytes": 2624,
+      "sha256": "aed448544c4249aa7aa5f09fc0999077aabe7c3c34b5d401355d9206bd8bd937"
+    },
+    {
+      "path": "games/002-robo-pong/README.md",
+      "bytes": 2625,
+      "sha256": "7a8884410403cf3d22aa15114feea567b2d83c1b76046fe04b3731e65ff0da33"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/ai-backend.config.example.json",
+      "bytes": 487,
+      "sha256": "58c3e9f085165c6a3f8cbb96cd6f2e888fe17967c53107be959b5631367d1c2c"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/maps/cathedral-cross-plate.png",
+      "bytes": 1915180,
+      "sha256": "f3d791b306deaecfb8315d486589e027b14dc83172851d88e107b3e58b892d36"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/maps/relay-protocol-plate.png",
+      "bytes": 1680478,
+      "sha256": "e5b9229abc37aa05da48a8cd2faa9c45d5f2e28886b4aff9b2c5afbc869601b6"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/maps/shattered-line-plate.png",
+      "bytes": 2755746,
+      "sha256": "ad174ce603a4664a3c695cf98daa1fb5e031687dd78d61a3334b08e8ceb40906"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/arena_bg_phone_neon_01.png",
+      "bytes": 1898528,
+      "sha256": "0b9d693be8324488e29e71f1295ae2e19cbf688f00bb5539d9e71a871d207dfd"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/asset_manifest_v0_4.json",
+      "bytes": 903,
+      "sha256": "84a831045bbe7dc65f2d81b42d5f9da218db29a0c8fb32307df3eed4debe2283"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/btn_hold_left_idle.png",
+      "bytes": 880325,
+      "sha256": "abc0020935add9fb18c3851554053b50096eb76d78cf3414516f98526b32ee11"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/btn_hold_right_idle.png",
+      "bytes": 960746,
+      "sha256": "77cadec684046d9434809499f91d5f91f0e6a030649fe52666b048bcea28dddc"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/core_ball_glow.png",
+      "bytes": 497099,
+      "sha256": "a2a86d57e1ad1d3576d13285332b56f918c7e2ac36841e34203ea811ed47ced4"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/core_ball_trail_short.png",
+      "bytes": 440810,
+      "sha256": "1877503f585ecc36c437a22ee4de3be8e528f63545e788413aebd531d250a16c"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/fx_hit_spark_cyan.png",
+      "bytes": 555144,
+      "sha256": "8fed4f2a76cf7f2dd1ee58e7cfe7362e439c6202bb13e7a364b9e676a6a07a3f"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/fx_hit_spark_magenta.png",
+      "bytes": 542411,
+      "sha256": "0b0406a47a981cd5c3ab6d18ce9607d263c407b44219e72da1279854f318f273"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/hud_score_frame.png",
+      "bytes": 836081,
+      "sha256": "4f76e2dcf09cb0ead92c38138a341c3553a23b9b84724af107f2fc3d000c671b"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/mascot_byte_bud_happy.png",
+      "bytes": 1241850,
+      "sha256": "4aa8aef559c3ca40b83033b6ef73fa6a9f051fc70951ed881c87feaa0006a5ca"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/mascot_r_obo_happy.png",
+      "bytes": 1048484,
+      "sha256": "1cf10400c322b310ef4eabcf8d06a8787ed9ea55c6eec32b3f85f9c96283746c"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/overlay_byte_bud_ai_wins.png",
+      "bytes": 1135489,
+      "sha256": "f07721352b24936725da36abeb17e661521fba0aa034e93142aae185b125604d"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/overlay_go.png",
+      "bytes": 1225014,
+      "sha256": "15a3cc5135ccc5c1003da63bb35b2207e138da9a53b044c040780e706aeba17b"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/overlay_r_obo_wins.png",
+      "bytes": 1407275,
+      "sha256": "6efd7f7854411c290d98674fa8db110e37a9fda58ade6f9e882e9e1f55ac979a"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/overlay_ready.png",
+      "bytes": 1179772,
+      "sha256": "14cc7853b4b140fc8e1e9c92627934a5c4750e768678e401d59a6d21fa4cfd99"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/overlay_score_plus_one.png",
+      "bytes": 799270,
+      "sha256": "5845f19d96370782c8e3f4a35f8b123a50ae5b17234558e019c8548b3a16c373"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/paddle_byte_bud_ai.png",
+      "bytes": 842692,
+      "sha256": "43e58ae4c975d7b5826708865a294b9875890cd020d1c26afa677b0c01f1bd80"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/paddle_r_obo_player.png",
+      "bytes": 610921,
+      "sha256": "ae13665b0f83c00c375c7113252f09c8f4081d3077629723b5061c08d7761b28"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/ui_phone_button_panel.png",
+      "bytes": 1764427,
+      "sha256": "9422753451e631b1e0c35a43bd8947299b4fa2a7c5b16b1dba0765413668f2f1"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/assets/processed/ui_ready_panel.png",
+      "bytes": 1071684,
+      "sha256": "919164118a96e56d70ea91b64f2838d628d6a778b3c6727ba4be269091c2e299"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/CLICK_ME_START_ROBO_PONG_2_PLAYERS.bat",
+      "bytes": 883,
+      "sha256": "a5a17eb7beac02f9ba87efeb879aadf7794881fde39a0e20ff353b01e9c1427c"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/CLICK_ME_START_ROBO_PONG_P2_COMPUTER.bat",
+      "bytes": 883,
+      "sha256": "a5a17eb7beac02f9ba87efeb879aadf7794881fde39a0e20ff353b01e9c1427c"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/docs/ACTION_REPORT_v0_3.md",
+      "bytes": 685,
+      "sha256": "703f7dd9e6728438489c5550257f5c9762634ea3bcc89ba440ac2c8db52f3ae3"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/docs/ACTION_REPORT_v0_4.md",
+      "bytes": 877,
+      "sha256": "12438c72c0b2e2e980b73a6fa759962dcb7c8683103d6b3470bab20567f5b6a6"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/docs/ACTION_REPORT_v0_5.md",
+      "bytes": 972,
+      "sha256": "d0c5198dfc601c3a1322653b400c39060435d834fbfa055dd50f514a57764c56"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/docs/ACTION_REPORT_v0_6_1_WSH_FIX.md",
+      "bytes": 502,
+      "sha256": "e31a23e356ed490f0ff62683f84d6014e8172c0f7fad7309460f1b952ee7b658"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/docs/ACTION_REPORT_v0_6_2_AUTOSTART.md",
+      "bytes": 567,
+      "sha256": "0d2e9eb5fd15617da34958f9b2b525d00d8a8f057a840c5f93238e2d493f8b79"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/docs/ACTION_REPORT_v0_6_3_MANUAL_START_FIX.md",
+      "bytes": 609,
+      "sha256": "66738e1c76c5a8e99f8e0ad4cc20289fd38e62c09ea5243bfd096a4ca5afd364"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/docs/ACTION_REPORT_v0_6_4_CONTROLS_UP.md",
+      "bytes": 480,
+      "sha256": "8c51ecf00bcd9fa05ece0fc0afb241bd59a85cd6e8b53257f1f23b2a11d78a97"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/docs/ACTION_REPORT_v0_6_5_P2_COMPUTER.md",
+      "bytes": 488,
+      "sha256": "f33194edccfbc0d7ede188c497a9205f01cbc7e9c40c5cabb047969c995c0bef"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/docs/ACTION_REPORT_v0_6.md",
+      "bytes": 807,
+      "sha256": "24347ee65869f7e7ad375ff879ad176ecc5f4dcb3fb96053c1bf4b10472367e1"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/docs/AI_BACKEND_SLOT_v0_5.md",
+      "bytes": 2258,
+      "sha256": "bd3799e14e020fda46b0554a42b755a29b36f8fd875e59841925b3fad1a28bed"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/neon-pong-duet-client.html",
+      "bytes": 3748,
+      "sha256": "8158ad33728fc0becacb1be6fd540a6f4383288307e3759a34c214c25b832204"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/neon-pong-duet-server.cjs",
+      "bytes": 22039,
+      "sha256": "3de5c761dbd68040e70e1da3e9b6e8f76fee094975cd3594b797f2b47b929fd0"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/neon-pong-duet.css",
+      "bytes": 9225,
+      "sha256": "24ad1220f81924cc17ec13f0c1f0d6d3fda44b4625028666ed10a6ad5d3c0049"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/neon-pong-duet.js",
+      "bytes": 18455,
+      "sha256": "8c27548c56be3437488801e541cd379ffd5d7e922741756f7103247d5c833592"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/README.md",
+      "bytes": 5137,
+      "sha256": "cbf79d495b0314740754429e658e4df603c9f8a17975d18dc1d640ace87b262a"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/ROBO_PONG_PHASER4_PHONE_CLIENT.html",
+      "bytes": 13767,
+      "sha256": "8e1a94856dbd124bf586b10eb3898dbd42c8264790634c60adc39fedb0999a7f"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/robo-pong-simple-bat-server.cjs",
+      "bytes": 13454,
+      "sha256": "e8b1b4e4de9aa568ef0f843e273e0ed88bcb47eeb0c9d608a70521753f464580"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/START_ROBO_PONG_SIMPLE_BAT_WINDOWS.bat",
+      "bytes": 883,
+      "sha256": "a5a17eb7beac02f9ba87efeb879aadf7794881fde39a0e20ff353b01e9c1427c"
+    },
+    {
+      "path": "games/002-robo-pong/runtime/VERSION_LOG.txt",
+      "bytes": 3193,
+      "sha256": "144fd98b1eef152a82d60645cdac14d4baf0215f594865a2c5e34e830cda5ffe"
+    },
+    {
+      "path": "games/003-robo-pong-cross/AI_NATIVE_SEAT_CONTRACT.md",
+      "bytes": 2861,
+      "sha256": "e0d0cbdca22ac16b21010a20b950b9946c6f6d23f863e33f399846376a3e7c76"
+    },
+    {
+      "path": "games/003-robo-pong-cross/game.manifest.json",
+      "bytes": 3577,
+      "sha256": "b755bbab3cf4dac1c2fc4ed89e2904eef4a739975b26194d6832789e0d01c89a"
+    },
+    {
+      "path": "games/003-robo-pong-cross/README.md",
+      "bytes": 4278,
+      "sha256": "3fa78f769aad93832265f91bfb7994bf15b4aa3a639d9194206b282eeb604490"
+    },
+    {
+      "path": "games/003-robo-pong-cross/runtime/assets/maps/cathedral-cross-plate.png",
+      "bytes": 1915180,
+      "sha256": "f3d791b306deaecfb8315d486589e027b14dc83172851d88e107b3e58b892d36"
+    },
+    {
+      "path": "games/003-robo-pong-cross/runtime/assets/maps/relay-protocol-plate.png",
+      "bytes": 1680478,
+      "sha256": "e5b9229abc37aa05da48a8cd2faa9c45d5f2e28886b4aff9b2c5afbc869601b6"
+    },
+    {
+      "path": "games/003-robo-pong-cross/runtime/assets/maps/shattered-line-plate.png",
+      "bytes": 2755746,
+      "sha256": "ad174ce603a4664a3c695cf98daa1fb5e031687dd78d61a3334b08e8ceb40906"
+    },
+    {
+      "path": "games/003-robo-pong-cross/runtime/controller-icon.svg",
+      "bytes": 936,
+      "sha256": "3338916bf6afc09e42c3daa9f6db0d168d2116996725800d4025594d5c75c195"
+    },
+    {
+      "path": "games/003-robo-pong-cross/runtime/controller-sw.js",
+      "bytes": 1463,
+      "sha256": "643dfae7af9919d9fcb84621b3d7dc754b0f2a85affcfd4b9d2947c8b6d6218d"
+    },
+    {
+      "path": "games/003-robo-pong-cross/runtime/manifest.webmanifest",
+      "bytes": 543,
+      "sha256": "9b2bae45f72f87db134721b695a0d1087043b09cb0ceb424877a1c335043cbd3"
+    },
+    {
+      "path": "games/003-robo-pong-cross/runtime/neon-pong-cross-client.html",
+      "bytes": 3815,
+      "sha256": "60f00425057951ac963d8826045c5413bc7606b0ba954b95ba99f6eae67a6e9a"
+    },
+    {
+      "path": "games/003-robo-pong-cross/runtime/neon-pong-cross-server.cjs",
+      "bytes": 31116,
+      "sha256": "0538c6e8ae5d8390ae57f6e59a0b4e8cbe61661e901b1432a108f9025651c83b"
+    },
+    {
+      "path": "games/003-robo-pong-cross/runtime/neon-pong-cross.css",
+      "bytes": 9416,
+      "sha256": "3b85c021c4bba68fa66e102b4e3aeaac6e1da2504bfa860a842ba097cd0b6212"
+    },
+    {
+      "path": "games/003-robo-pong-cross/runtime/neon-pong-cross.js",
+      "bytes": 22702,
+      "sha256": "5f1ac8b2b0bc45cddfd612af5c1bbd7110b6a2ab5cdc2475dec529dfaea50504"
+    },
+    {
+      "path": "games/003-robo-pong-cross/runtime/robo-pong-cross-client.html",
+      "bytes": 26373,
+      "sha256": "b59d327c5e510fb7f15d0a352691786059a8f9284e8ad510fc89f265e172d6f0"
+    },
+    {
+      "path": "games/003-robo-pong-cross/runtime/robo-pong-cross-server.cjs",
+      "bytes": 25618,
+      "sha256": "ca5012d5f4481a54f7f43c7d3e544a75f1506560e0a690f1bb7ba01920bb8f0e"
+    },
+    {
+      "path": "games/003-robo-pong-cross/runtime/seat-interface.cjs",
+      "bytes": 7331,
+      "sha256": "516612cb17a3dd64a2da283fe6d890001b44a395015f76c86ee768a3b5443f48"
+    },
+    {
+      "path": "games/006-lumenwake/ASSET_LICENSES.md",
+      "bytes": 312,
+      "sha256": "03eea2235cf257cddb3c757c4dcabe0f2706c63a5786375faa86ec2483e88da6"
+    },
+    {
+      "path": "games/006-lumenwake/game.manifest.json",
+      "bytes": 2699,
+      "sha256": "8e9c5a1f0cd75d7f9223ca84e82beddd703c0c84102b8272fa824bf2c79de38d"
+    },
+    {
+      "path": "games/006-lumenwake/README.md",
+      "bytes": 1135,
+      "sha256": "bee7291e8223ce0226a53a9563fb62fba523839c5e4aaf9d6eeac57d03f64e93"
+    },
+    {
+      "path": "games/006-lumenwake/runtime/assets/aurora-field.svg",
+      "bytes": 1080,
+      "sha256": "86042dbe4970cfea9482cf9246a3b9b7cfdea66d376b13ec0c9f2b3a2d72e15e"
+    },
+    {
+      "path": "games/006-lumenwake/runtime/assets/lumenwake-logo.svg",
+      "bytes": 923,
+      "sha256": "6a6ef526bed3dfc8e1f5264c25b6aa9b8d0cb44411adf7820a00f7d1476a887d"
+    },
+    {
+      "path": "games/006-lumenwake/runtime/assets/lumenwake-mark.svg",
+      "bytes": 800,
+      "sha256": "4ab6ae172d5bf5855b0faf35b77598b21977fbe7dee999f06f0d6cf8912f4a10"
+    },
+    {
+      "path": "games/006-lumenwake/runtime/lumenwake-client.html",
+      "bytes": 21374,
+      "sha256": "de1de319e9d780ba5e2c6f8a116cf63935728d1c9cf95324722f8bf42a538796"
+    },
+    {
+      "path": "games/006-lumenwake/runtime/lumenwake-core.cjs",
+      "bytes": 9834,
+      "sha256": "ae055b138a58fc86a8d3684e283e71df0ca0392f95856ae44aa310038a7aad27"
+    },
+    {
+      "path": "games/006-lumenwake/runtime/lumenwake-server.cjs",
+      "bytes": 4151,
+      "sha256": "9b450a8d20e723694d1d28dbcf9500a70359d4e67d2f743eea9eaff0de6fa276"
+    },
+    {
+      "path": "games/012-pulse-choir/ASSET_PROVENANCE.md",
+      "bytes": 1145,
+      "sha256": "dbe80febb2f44b93e4742400f38a623395e80b2f8a2a8392b004eed836aa8d3e"
+    },
+    {
+      "path": "games/012-pulse-choir/game.manifest.json",
+      "bytes": 3482,
+      "sha256": "20339be1d6d6744587b553bdf0404f56654acbeeaaef2fc53d0a38c7393a54a8"
+    },
+    {
+      "path": "games/012-pulse-choir/KNOWN_LIMITS.md",
+      "bytes": 1727,
+      "sha256": "54321b41425cfe037a1db8f350cf051f1970a5f02370cfdd94fd1d50a69368be"
+    },
+    {
+      "path": "games/012-pulse-choir/README_FIRST.md",
+      "bytes": 2473,
+      "sha256": "91e4241acc26907c3564eb63261ac19d14598705188f7efb780196885227da52"
+    },
+    {
+      "path": "games/012-pulse-choir/runtime/app.js",
+      "bytes": 42722,
+      "sha256": "665e56c2da659c734130e572442bf622bde23c4db1c55409ebf37fd65171b188"
+    },
+    {
+      "path": "games/012-pulse-choir/runtime/assets/pulse-choir-arena-v2.png",
+      "bytes": 2717774,
+      "sha256": "6eb5b1d48687e75656a12a60d6d33aa023450fc84da0fcd5c06f2ebfdf47e2c6"
+    },
+    {
+      "path": "games/012-pulse-choir/runtime/checkpoint-store.js",
+      "bytes": 10762,
+      "sha256": "dce22259f07e7ef46d88342494baa9c237bb9a6c8767bda3201d9f7942673c46"
+    },
+    {
+      "path": "games/012-pulse-choir/runtime/controller.html",
+      "bytes": 19251,
+      "sha256": "01f79b7f2c8ae5486cb204d56cc9e69070fac1f681e7868f9c8c2fd11b6cefa1"
+    },
+    {
+      "path": "games/012-pulse-choir/runtime/game-core.js",
+      "bytes": 50422,
+      "sha256": "c50b1b99da3c586b625426096bd6ca991e13172be5cf9bedb28746752337e089"
+    },
+    {
+      "path": "games/012-pulse-choir/runtime/hub-handback.js",
+      "bytes": 3454,
+      "sha256": "f9c76ff46973137d7d14cbd15f091b78e0138ccc1c2136df65223bfbd8d415ad"
+    },
+    {
+      "path": "games/012-pulse-choir/runtime/index.html",
+      "bytes": 7308,
+      "sha256": "4412ec46cfc3885ad4a1e0eff795907b61679e566d8d293500f9d9510a49d0ed"
+    },
+    {
+      "path": "games/012-pulse-choir/runtime/server.js",
+      "bytes": 13789,
+      "sha256": "50015e9685fa5c051742323ca0cd64440513bfc5c0ec0e11abfe801142d44b6d"
+    },
+    {
+      "path": "games/012-pulse-choir/runtime/styles.css",
+      "bytes": 24113,
+      "sha256": "8241f82e3c37f7cd37403cc5d125231172cf4323fc656977f41a1f69dd31eaa6"
+    },
+    {
+      "path": "index.html",
+      "bytes": 3819,
+      "sha256": "7061c0897da8878145145d4f2b7ac38a888ec7579941c6c7fd2df5d3692b66c1"
+    },
+    {
+      "path": "LICENSE_STATUS.md",
+      "bytes": 841,
+      "sha256": "84567ec1d85480b017aeb7fed0ee3ee969124e274996aedbcd6bbfc01885fdf0"
+    },
+    {
+      "path": "README_FIRST.md",
+      "bytes": 1010,
+      "sha256": "77ce23d364bbbf2c0740c8d80420f47ad830db0c654f50485a94ba63cf7de7a6"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2083,
+      "sha256": "8e4c116de4e678de5aeed33d0fbd89758f52e9574c286ca730e60d3af3a44502"
+    },
+    {
+      "path": "server.cjs",
+      "bytes": 12678,
+      "sha256": "95ed9b12d166f625febdc04e3325828f89d851931e52c74bdd0c423f86ed4987"
+    },
+    {
+      "path": "START_GAME_HUB.cmd",
+      "bytes": 250,
+      "sha256": "2f6eb50f5e794fbb6df4a18f0ae303cc0014c4e8c443a3085867ec636d21ea4a"
+    },
+    {
+      "path": "START_LAN_GAME_NIGHT.cmd",
+      "bytes": 434,
+      "sha256": "4086999ac55fc2ed8f88fa82cbaad7ee47dbf9a93287824b25327aa7cdc56f69"
+    },
+    {
+      "path": "start-game-hub.sh",
+      "bytes": 81,
+      "sha256": "9b2dbcb1d3f6ec0431549a4cc0a6e0c50fd7a7a838c81b6935d856ce40a042f5"
+    },
+    {
+      "path": "styles.css",
+      "bytes": 8054,
+      "sha256": "c04518a6ef4883106255391fb5e3867b4318097cc36cd93c4f3708187ec7a16a"
+    },
+    {
+      "path": "vendor/QRCODE_GENERATOR_NOTICE.txt",
+      "bytes": 227,
+      "sha256": "d90d7ec38ec8383a5f52e6d3a751f092f224c1561569939eab541fe617897188"
+    },
+    {
+      "path": "vendor/qrcode.js",
+      "bytes": 56694,
+      "sha256": "18ae399f81182bc9de916e9c77b195df20cc58d6f2d55a62b085a299f1bf1780"
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "schema": "axm.local-game-catalog/v1",
+  "distribution": {
+    "id": "axm-local-game-hub",
+    "name": "AXM Local Game Hub",
+    "version": "0.1.0-proof-of-start",
+    "status": "EXPERIMENTAL",
+    "promise": "One small local launcher, visible QR controllers, no account, no subscription and no internet requirement."
+  },
+  "policy": {
+    "internetRequired": false,
+    "accountRequired": false,
+    "telemetry": false,
+    "activeGameLimit": 1,
+    "qrControllers": true
+  },
+  "games": [
+    {
+      "id": "002-robo-pong",
+      "slot": "002",
+      "name": "AXM Pong: Duet",
+      "status": "WORKING TEST",
+      "version": "2.0.0-neon-duet",
+      "description": "A dark-glass 1-2 player Pong story with solo AI support, two-player co-op, three arenas, and local 1v1 multiplayer.",
+      "minPlayers": 1,
+      "maxPlayers": 2,
+      "phoneControllers": true,
+      "touch": true,
+      "keyboard": true,
+      "sharedScreen": true,
+      "source": "tools/game-hub/game-library/002-robo-pong",
+      "serverEntry": "runtime/neon-pong-duet-server.cjs",
+      "readyPath": "/state?room=AXM1",
+      "portOffset": 2,
+      "playPath": "/?room=AXM1&player=screen",
+      "controllerPath": "/?room=AXM1&player={player}",
+      "defaultHumanSeats": 2,
+      "starterReason": "Familiar Pong entry point for solo, two-player co-op or local 1v1 with phone controls.",
+      "package": {
+        "files": 47,
+        "bytes": 25395977
+      }
+    },
+    {
+      "id": "003-robo-pong-cross",
+      "slot": "003",
+      "name": "AXM Pong: Cross",
+      "status": "WORKING TEST",
+      "version": "2.1.0-neon-cross",
+      "description": "Three- or four-player dark-glass Pong with competitive last-light-standing and shared-core co-op across three arenas.",
+      "minPlayers": 3,
+      "maxPlayers": 4,
+      "phoneControllers": true,
+      "touch": true,
+      "keyboard": true,
+      "sharedScreen": true,
+      "source": "tools/game-hub/game-library/003-robo-pong-cross",
+      "serverEntry": "runtime/neon-pong-cross-server.cjs",
+      "readyPath": "/state?room=AXM1",
+      "portOffset": 3,
+      "playPath": "/?room=AXM1&player=screen",
+      "controllerPath": "/?room=AXM1&player={player}",
+      "defaultHumanSeats": 4,
+      "starterReason": "Three- or four-player Pong with competitive and shared-core co-op modes plus QR phone seats.",
+      "package": {
+        "files": 16,
+        "bytes": 6491433
+      }
+    },
+    {
+      "id": "006-lumenwake",
+      "slot": "006",
+      "name": "Lumenwake",
+      "status": "WORKING TEST",
+      "version": "0.1.0-game-night",
+      "description": "A polished 1–4 player co-op game-night run: carry fallen light, cover the carrier, revive the party and wake the aurora before the eclipse.",
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "phoneControllers": true,
+      "touch": true,
+      "keyboard": true,
+      "sharedScreen": true,
+      "source": "tools/game-hub/game-library/006-lumenwake",
+      "serverEntry": "runtime/lumenwake-server.cjs",
+      "readyPath": "/state",
+      "portOffset": 6,
+      "playPath": "/?room=AXM1&player=screen",
+      "controllerPath": "/?room=AXM1&player={player}",
+      "defaultHumanSeats": 4,
+      "starterReason": "Tiny cooperative game-night build with keyboard, touch and phone control.",
+      "package": {
+        "files": 9,
+        "bytes": 42308
+      }
+    },
+    {
+      "id": "012-pulse-choir",
+      "slot": "012",
+      "name": "Pulse Choir",
+      "status": "PLAYABLE ALPHA V4 · HUMAN-STEWARDSHIP LOCAL GAME NIGHT",
+      "version": "0.4.0-stewarded-alpha",
+      "description": "A 1–4 player cosmic co-op show: build risky three-note TRIADs, chain bank multipliers, synchronize a room-wide surge, and turn perfect harmony into glitch shields.",
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "phoneControllers": true,
+      "touch": true,
+      "keyboard": true,
+      "sharedScreen": true,
+      "source": "tools/game-hub/game-library/012-pulse-choir",
+      "serverEntry": "runtime/server.js",
+      "readyPath": "/health",
+      "portOffset": 12,
+      "playPath": "/games/012/?room=AXM1&player=screen",
+      "controllerPath": "/controller.html?room=AXM1&player={player}",
+      "defaultHumanSeats": 4,
+      "starterReason": "Local cooperative rhythm game built around shared-screen play and QR controllers.",
+      "package": {
+        "files": 13,
+        "bytes": 2898422
+      }
+    }
+  ]
+}
