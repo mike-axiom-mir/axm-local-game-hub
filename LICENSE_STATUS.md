@@ -1,21 +1,15 @@
 # License Status
 
-AXM Local Game Hub is publicly visible for inspection and experimental
-evaluation, but this repository does **not yet include a broad open-source
-license grant**.
+AXM Local Game Hub is licensed under the [Apache License 2.0](LICENSE), except where a file or preserved third-party notice states otherwise.
 
-Public visibility does not by itself grant permission to redistribute,
-relicense, sell, or incorporate AXM into another product. No additional
-permission is granted beyond the terms that already apply through GitHub.
+The repository's experimental status describes technical readiness. It does not cancel or narrow the Apache-2.0 grant. Under that license, people may use, reproduce, modify, and distribute covered material while following its conditions, including preservation of required notices and license text.
 
-You may still:
+Important boundaries:
 
-- inspect the source and public evidence;
-- download the experimental package for personal evaluation;
-- play the included games locally with family or friends;
-- report issues or propose improvements;
-- discuss collaboration or a future license in the main AXM repository.
+- the software is provided without warranties or conditions;
+- Apache-2.0 does not grant permission to use AXM names or marks as an endorsement;
+- third-party components and assets keep their own terms;
+- enabling LAN mode exposes the host only to devices on the selected local network and should be limited to trusted networks;
+- private saves, logs, secrets, and unpublished AXM material are not part of this repository.
 
-Third-party components and assets remain governed by their own preserved
-license notices. A later explicit license decision may replace this notice.
-
+See [LICENSE](LICENSE) for the complete controlling terms.
