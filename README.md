@@ -1,5 +1,7 @@
 # AXM Local Game Hub
 
+[![Apache License 2.0](https://img.shields.io/badge/license-Apache--2.0-3b82f6)](LICENSE) ![Local first](https://img.shields.io/badge/local--first-yes-16a085) ![Status experimental](https://img.shields.io/badge/status-experimental-f59e0b)
+
 **EXPERIMENTAL proof of start** — a small, self-contained local game-night
 launcher from the AXM Collaboration Platform.
 
@@ -54,6 +56,9 @@ Do not enable it on an untrusted public Wi-Fi network.
 `FILE_INTEGRITY.json` records the SHA-256 digest of every assembled file, and
 `BUILD_RECEIPT.json` records the exact focused source selection.
 
-Read [LICENSE_STATUS.md](LICENSE_STATUS.md) before redistributing or
-incorporating the package into another product.
+Repository content is licensed under the [Apache License 2.0](LICENSE), except
+where a file or preserved third-party notice states otherwise. Read
+[LICENSE_STATUS.md](LICENSE_STATUS.md) for the exact boundary.
+
+Explore the wider family in the [AXM Public Project Map](https://github.com/mike-axiom-mir/axm-collaboration-platform/blob/main/docs/PUBLIC_PROJECTS.md).
 
