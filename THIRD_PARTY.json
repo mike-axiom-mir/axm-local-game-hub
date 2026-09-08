@@ -1,0 +1,7 @@
+{
+  "schema": "axm-third-party-v1",
+  "repository": "axm-local-game-hub",
+  "project_license": "Apache-2.0",
+  "audit": {"status":"baseline","complete":false,"note":"Initial explicit ledger. Included AXM games remain AXM-owned; any third-party code/assets must keep their own license/provenance."},
+  "entries": []
+}
