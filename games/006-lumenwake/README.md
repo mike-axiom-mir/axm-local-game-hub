@@ -17,6 +17,11 @@ Collect cyan, violet and gold fallen light, carry up to three pieces, and return
 - Phone: move stick, Pulse and Dash
 - AI seats: imperfect local decision loop using the same movement and action fields
 
+The phone controller shows authoritative Pulse and Dash cooldowns and confirms
+accepted actions. On the shared screen, each Gloom draws its current server-
+selected target so the party can see who needs cover without changing the
+underlying targeting rules.
+
 ## Achievement boundary
 
 Game achievements are stored locally under `axm.lumenwake.achievements.v1`. The shared AXM profile still receives its normal verified `game-played` receipt from Game Hub; Lumenwake does not invent shared-profile event types.

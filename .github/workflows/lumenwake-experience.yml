@@ -1,0 +1,28 @@
+name: Lumenwake experience contract
+
+on:
+  pull_request:
+    paths:
+      - "games/006-lumenwake/**"
+      - ".github/workflows/lumenwake-experience.yml"
+  push:
+    branches: [main]
+    paths:
+      - "games/006-lumenwake/**"
+      - ".github/workflows/lumenwake-experience.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check games/006-lumenwake/runtime/lumenwake-core.cjs
+      - run: node --check games/006-lumenwake/runtime/lumenwake-server.cjs
+      - run: node --test games/006-lumenwake/tests/lumenwake-experience.test.cjs
