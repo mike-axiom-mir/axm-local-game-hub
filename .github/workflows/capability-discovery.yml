@@ -1,0 +1,70 @@
+name: Capability Discovery Contract
+
+on:
+  push:
+    branches:
+      - automation/capability-weaver-hub-registry-v0.1
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  capability-discovery:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Local Game Hub
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run focused generator tests
+        run: node --test tests/capability-registry.test.cjs
+
+      - name: Generate capability registry from real catalog and manifests
+        run: node tools/generate-capability-registry.cjs
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check out pinned Discovery Buddy consumer
+        uses: actions/checkout@v4
+        with:
+          repository: mike-axiom-mir/axm-discovery-buddy
+          ref: 1a94fc2481d1cfc9234dea7c86af4777126d3924
+          path: .integration/discovery-buddy
+
+      - name: Prove Discovery Buddy can consume the generated registry
+        env:
+          PYTHONPATH: .integration/discovery-buddy
+        run: |
+          python -m discovery_buddy scan . --public --output-dir /tmp/axm-discovery
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path('/tmp/axm-discovery/public-discovery.json').read_text('utf-8'))
+          assert data['summary']['repositories'] == 1, data['summary']
+          assert data['summary']['capability_records'] >= 10, data['summary']
+          repo = data['repositories'][0]
+          assert repo['repo'] == 'mike-axiom-mir/axm-local-game-hub', repo
+          sources = repo['capabilities']['sources']
+          assert any(s['path'] == 'registry/capabilities.jsonl' and s.get('errors', 0) == 0 for s in sources), sources
+          rows = {row['id']: row for row in repo['capabilities']['records']}
+          assert '003-robo-pong-cross' in rows['axm-semantic-input-v1']['consumers']
+          assert '012-pulse-choir' in rows['axm-semantic-input-v1']['consumers']
+          assert '003-robo-pong-cross' in rows['axm-seat-screen-semantics-v1']['consumers']
+          print(f"Discovery Buddy consumed {len(rows)} Local Game Hub capability rows")
+          PY
+
+      - name: Emit generated evidence for this bootstrap run
+        run: |
+          echo '--- registry/capabilities.jsonl ---'
+          cat registry/capabilities.jsonl
+          echo '--- registry/capabilities.receipt.json ---'
+          cat registry/capabilities.receipt.json
