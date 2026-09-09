@@ -26,6 +26,11 @@ async function patchState(patch) {
   return response.json();
 }
 async function visibleText(page, selector) { await page.locator(selector).waitFor({ state: 'visible' }); return (await page.locator(selector).innerText()).trim(); }
+function observePage(page, receipts) {
+  page.on('pageerror', (error) => receipts.pageErrors.push(error.message));
+  page.on('console', (message) => { if (message.type() === 'error') receipts.consoleErrors.push(message.text()); });
+  page.on('requestfailed', (request) => receipts.requestFailures.push({ url: request.url(), error: request.failure() && request.failure().errorText }));
+}
 
 (async () => {
   const roster = [
@@ -43,15 +48,17 @@ async function visibleText(page, selector) { await page.locator(selector).waitFo
   child.stderr.on('data', (chunk) => { serverLog += chunk.toString(); });
 
   let browser;
+  const receipts = { pageErrors: [], consoleErrors: [], requestFailures: [] };
   try {
     const health = await waitHealth();
     assert.equal(health.playMode, 'coop');
     assert.equal(health.seatCount, 3);
-    browser = await chromium.launch({ headless: true });
+    const launchOptions = { headless: true };
+    if (process.env.AXM_BROWSER_EXECUTABLE) launchOptions.executablePath = process.env.AXM_BROWSER_EXECUTABLE;
+    browser = await chromium.launch(launchOptions);
     const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: 'reduce' });
     const shared = await context.newPage();
-    const pageErrors = [];
-    shared.on('pageerror', (error) => pageErrors.push(error.message));
+    observePage(shared, receipts);
     await shared.goto(base + '/?room=AXM1&player=screen', { waitUntil: 'domcontentloaded' });
 
     await patchState({ phase: 'running', mission: { relayChain: ['p1'], relayArmed: false } });
@@ -66,7 +73,7 @@ async function visibleText(page, selector) { await page.locator(selector).waitFo
 
     const phoneContext = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
     const phone = await phoneContext.newPage();
-    phone.on('pageerror', (error) => pageErrors.push(error.message));
+    observePage(phone, receipts);
     await phone.goto(base + '/?room=AXM1&player=p2', { waitUntil: 'domcontentloaded' });
     await phone.waitForFunction(() => document.querySelector('#relayControllerCue') && /YOUR TOUCH/.test(document.querySelector('#relayControllerCue').textContent));
     assert.equal(await visibleText(phone, '#relayControllerCue'), 'YOUR TOUCH ADVANCES RELAY · 1/3');
@@ -78,10 +85,12 @@ async function visibleText(page, selector) { await page.locator(selector).waitFo
     await shared.waitForFunction(() => /STRIKE THE WARDEN/.test(document.querySelector('#relayCoachAction').textContent));
     await phone.waitForFunction(() => /DRIVE THE LIGHT INTO THE WARDEN/.test(document.querySelector('#relayControllerCue').textContent));
     assert.equal(await shared.locator('.relay-edge-top').isVisible(), false);
-    assert.equal(pageErrors.length, 0, 'relay realization must not produce page errors: ' + pageErrors.join(' | '));
+    assert.equal(receipts.pageErrors.length, 0, 'relay realization must not produce page errors: ' + receipts.pageErrors.join(' | '));
 
+    const report = { ok: true, health, sharedAction: 'NEXT TOUCH · ANY NEW TEAMMATE', phoneAction: 'YOUR TOUCH ADVANCES RELAY · 1/3', armedAction: 'RELAY ARMED', mobileOverflow, receipts };
+    fs.writeFileSync(path.join(evidenceDir, 'browser-report.json'), JSON.stringify(report, null, 2) + '\n');
     await phoneContext.close(); await context.close();
-    console.log(JSON.stringify({ ok: true, health, sharedAction: 'NEXT TOUCH · ANY NEW TEAMMATE', phoneAction: 'YOUR TOUCH ADVANCES RELAY · 1/3', armedAction: 'RELAY ARMED', mobileOverflow, pageErrors }, null, 2));
+    console.log(JSON.stringify(report, null, 2));
   } finally {
     if (browser) await browser.close().catch(() => {});
     child.kill('SIGTERM');
