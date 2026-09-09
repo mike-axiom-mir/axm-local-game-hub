@@ -1,0 +1,58 @@
+name: Pulse Choir sync readiness
+
+on:
+  pull_request:
+    paths:
+      - 'games/012-pulse-choir/runtime/index.html'
+      - 'games/012-pulse-choir/runtime/sync-readiness.js'
+      - 'tests/pulse-sync-readiness.test.cjs'
+      - 'tests/pulse-sync-readiness-browser.mjs'
+      - '.github/workflows/pulse-sync-readiness.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    name: Contract · Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Syntax
+        run: |
+          node --check games/012-pulse-choir/runtime/game-core.js
+          node --check games/012-pulse-choir/runtime/sync-readiness.js
+      - name: Sync readiness contract
+        run: node --test tests/pulse-sync-readiness.test.cjs
+
+  chromium:
+    name: Real Pulse Choir surface · Chromium
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install CI-only Chromium driver
+        run: npm install --no-save --ignore-scripts playwright@1.55.0
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Exercise live shared-screen readiness loop
+        run: |
+          mkdir -p test-artifacts/pulse-sync-readiness
+          node tests/pulse-sync-readiness-browser.mjs
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pulse-sync-readiness-${{ github.sha }}
+          path: test-artifacts/pulse-sync-readiness
+          if-no-files-found: warn
