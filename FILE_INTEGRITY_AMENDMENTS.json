@@ -19,16 +19,29 @@
       }
     },
     {
+      "path": "README.md",
+      "sourceCommit": "ac24de253dfea2210d11e9e3c31c4130abdc3958",
+      "reason": "Document the optional Causal Loop consumer boundary and its explicit local configuration without silently rewriting the proof-of-start seal.",
+      "previous": {
+        "bytes": 2083,
+        "sha256": "8e4c116de4e678de5aeed33d0fbd89758f52e9574c286ca730e60d3af3a44502"
+      },
+      "current": {
+        "bytes": 3146,
+        "sha256": "142cbd94cd3376dfd7643074ef1975250286c07014f62f6aab94057121099d0e"
+      }
+    },
+    {
       "path": "server.cjs",
-      "sourceCommit": "268de3d140f4de26707673ed87582b42ad96b030",
-      "reason": "Preserve PR #7's observed child-exit gate and serialize launch/stop transitions so concurrent host requests cannot violate the single-active-game contract.",
+      "sourceCommit": "ac24de253dfea2210d11e9e3c31c4130abdc3958",
+      "reason": "Preserve the serialized runtime lifecycle and expose the optional Causal Loop discovery and verified-run routes without silently rewriting the proof-of-start seal.",
       "previous": {
         "bytes": 12678,
         "sha256": "95ed9b12d166f625febdc04e3325828f89d851931e52c74bdd0c423f86ed4987"
       },
       "current": {
-        "bytes": 12801,
-        "sha256": "6f14d5b8ffeefe59ef24b3eb443115c258eb1e5926f9556f3fa706d2ecc0a72f"
+        "bytes": 13560,
+        "sha256": "39adcd1246e36ee5994bcf79b2fb885e6743f8ca98b83e69d66a5f731032b99f"
       }
     }
   ]
