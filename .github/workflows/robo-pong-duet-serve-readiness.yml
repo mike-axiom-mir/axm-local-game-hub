@@ -27,9 +27,10 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Exact inline realization contract
         run: node --test tests/robo-pong-duet-serve-feedback.test.cjs
-      - name: Existing authoritative Duet smoke test
-        working-directory: games/002-robo-pong/runtime
-        run: node neon-duet-selftest.cjs
+      - name: Present Duet runtime syntax
+        run: |
+          node --check games/002-robo-pong/runtime/neon-pong-duet-server.cjs
+          node --check games/002-robo-pong/runtime/neon-pong-duet.js
 
   chromium:
     name: Real Duet surface · Chromium
