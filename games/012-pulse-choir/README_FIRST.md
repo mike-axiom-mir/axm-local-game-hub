@@ -29,6 +29,25 @@ node runtime/server.js
 
 Then open `http://127.0.0.1:8802/`. The direct-development roster contains one human and two AI seats. Game Hub owns the real selected roster when it launches the package.
 
+## Restart truth
+
+Pulse Choir writes local `axm.pulse-choir-checkpoint/v2` envelopes. The state and
+the complete checkpoint metadata have separate SHA-256 bindings. On restart the
+server verifies both bindings, the roster identity, the state contract, the
+expiry window, and the exact envelope shape before resuming play.
+
+Malformed, altered, wrong-roster, or future-dated checkpoints enter a write
+hold. Routine ticks and shutdown autosaves cannot overwrite those bytes. The
+existing explicit **New Show** action releases the hold by preserving the exact
+rejected bytes under a content-addressed local quarantine name before creating
+fresh state. Recovery status exposes only the quarantine filename, never its
+absolute host path.
+
+Legacy v1 checkpoints remain loadable after structural validation, but their
+unsealed origin is labeled `migrated-unsealed-v1`; the next successful save
+converges them to v2. Hashes provide local integrity evidence, not signatures,
+account identity, or authority.
+
 Keyboard controls on the shared screen:
 
 - P1: `WASD` + `Space`

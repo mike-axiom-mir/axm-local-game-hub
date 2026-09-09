@@ -1,0 +1,33 @@
+name: Pulse Choir checkpoint integrity
+
+on:
+  pull_request:
+    paths:
+      - "games/012-pulse-choir/**"
+      - "tests/pulse-checkpoint-integrity.test.cjs"
+      - ".github/workflows/pulse-checkpoint-integrity.yml"
+  push:
+    branches: [main]
+    paths:
+      - "games/012-pulse-choir/**"
+      - "tests/pulse-checkpoint-integrity.test.cjs"
+      - ".github/workflows/pulse-checkpoint-integrity.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: node --check games/012-pulse-choir/runtime/checkpoint-store.js
+      - run: node --check games/012-pulse-choir/runtime/server.js
+      - run: node tests/pulse-checkpoint-integrity.test.cjs
+      - run: node tests/pulse-checkpoint-runtime.test.cjs

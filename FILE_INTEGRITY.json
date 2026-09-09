@@ -401,13 +401,13 @@
     },
     {
       "path": "games/012-pulse-choir/KNOWN_LIMITS.md",
-      "bytes": 1727,
-      "sha256": "54321b41425cfe037a1db8f350cf051f1970a5f02370cfdd94fd1d50a69368be"
+      "bytes": 1998,
+      "sha256": "836495950d6203669a135bc0b3a8ea0cbe08ed3d13be814c46f487ba2fe659ab"
     },
     {
       "path": "games/012-pulse-choir/README_FIRST.md",
-      "bytes": 2473,
-      "sha256": "91e4241acc26907c3564eb63261ac19d14598705188f7efb780196885227da52"
+      "bytes": 3471,
+      "sha256": "96fe27011ec080c3916fbb67e8d3d736c18f40502920315b017e82ab92dea79a"
     },
     {
       "path": "games/012-pulse-choir/runtime/app.js",
@@ -421,8 +421,8 @@
     },
     {
       "path": "games/012-pulse-choir/runtime/checkpoint-store.js",
-      "bytes": 10762,
-      "sha256": "dce22259f07e7ef46d88342494baa9c237bb9a6c8767bda3201d9f7942673c46"
+      "bytes": 17021,
+      "sha256": "a50aaec8c0722a31e720b0216b3f0d0436864dd557d9f540db91e656b19f3b2e"
     },
     {
       "path": "games/012-pulse-choir/runtime/controller.html",
