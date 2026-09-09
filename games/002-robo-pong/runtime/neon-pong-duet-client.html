@@ -8,6 +8,18 @@
   <link rel="stylesheet" href="aetherglass/axm-aetherglass.css">
   <link rel="stylesheet" href="aetherglass/axm-components.css">
   <link rel="stylesheet" href="neon-pong-duet.css">
+  <style id="duet-serve-feedback-style">
+    .serve-cue{--serve-progress:0;pointer-events:none;position:absolute;z-index:8;left:50%;top:36%;display:grid;place-items:center;gap:8px;transform:translate(-50%,-50%);color:#edf6ff;text-align:center;filter:drop-shadow(0 10px 24px rgba(0,0,0,.55))}
+    .serve-cue[hidden],.controller-serve-status[hidden]{display:none}
+    .serve-dial{position:relative;display:grid;place-items:center;width:112px;height:112px;border-radius:50%;background:conic-gradient(#46d7e7 calc(var(--serve-progress) * 1turn),rgba(70,215,231,.12) 0);box-shadow:0 0 38px rgba(70,215,231,.16)}
+    .serve-dial::before{content:"";position:absolute;inset:7px;border:1px solid rgba(70,215,231,.34);border-radius:50%;background:rgba(3,8,15,.9);box-shadow:inset 0 0 28px rgba(70,215,231,.08)}
+    .serve-dial strong{position:relative;z-index:1;font:800 31px/1 "Cascadia Mono",Consolas,monospace;letter-spacing:-.04em;color:#fff}
+    .serve-cue small{padding:6px 10px;border:1px solid rgba(70,215,231,.22);background:rgba(3,8,15,.72);color:#91a8bb;font:700 9px "Cascadia Mono",Consolas,monospace;letter-spacing:.16em}
+    .controller-serve-status{display:block;margin-top:9px;color:#46d7e7;font:800 10px "Cascadia Mono",Consolas,monospace;letter-spacing:.12em}
+    @media(max-width:760px){.serve-cue{display:none}.controller-serve-status{font-size:11px}}
+    @media(prefers-reduced-motion:reduce){.serve-cue{filter:none}.serve-dial{box-shadow:none}}
+    @media(prefers-contrast:more){.serve-dial{background:conic-gradient(#edf6ff calc(var(--serve-progress) * 1turn),#34495a 0)}.serve-dial::before{border-color:#edf6ff}.controller-serve-status{color:#edf6ff}}
+  </style>
 </head>
 <body data-theme="aetherglass" data-axm-surface="game" data-effects="balanced" data-motion="full">
   <header class="topbar" aria-label="Game status">
@@ -21,6 +33,11 @@
     <section class="arena-shell" id="arenaShell" aria-label="AXM Pong arena">
       <canvas id="game" width="1200" height="800" aria-label="Two-player Pong arena"></canvas>
       <div class="arena-vignette" aria-hidden="true"></div>
+
+      <div class="serve-cue" id="serveCue" hidden aria-label="Light charging before serve">
+        <span class="serve-dial" aria-hidden="true"><strong id="serveCountdown">0.0</strong></span>
+        <small>LIGHT CHARGING · PREPARE</small>
+      </div>
 
       <section class="launch-panel" id="launchPanel" aria-labelledby="launchTitle">
         <p class="eyebrow" id="launchEyebrow">1–2 PLAYER STORY / CO-OP</p>
@@ -46,7 +63,7 @@
 
     <section class="controller-panel" id="controllerPanel" hidden aria-label="Player controller">
       <div class="controller-identity"><small id="controllerSeat">P1 · DUET</small><strong id="controllerName">PLAYER</strong><span id="controllerStatus">READY</span></div>
-      <div class="controller-mission"><small id="controllerMissionLabel">CORE</small><strong id="controllerMissionValue">5 / 5</strong></div>
+      <div class="controller-mission"><small id="controllerMissionLabel">CORE</small><strong id="controllerMissionValue">5 / 5</strong><span class="controller-serve-status" id="controllerServeStatus" hidden>LIGHT IN 0.0s</span></div>
       <div class="ability-panel"><small>HELD ABILITY</small><strong id="powerName">RANDOM SPECIAL</strong><span id="powerState">READY</span></div>
     </section>
   </main>
@@ -59,6 +76,43 @@
 
   <script src="aetherglass/axm-aetherglass.js"></script>
   <script src="aetherglass/axm-lighting-director.js"></script>
+  <script id="duet-serve-feedback">
+    (function () {
+      'use strict';
+      var params = new URLSearchParams(location.search);
+      var rawPlayer = params.get('player') || '';
+      var player = /^p[12]$/.test(rawPlayer) ? rawPlayer : 'screen';
+      var base = location.pathname.indexOf('/games/002') === 0 ? '/games/002' : '';
+      var cue = document.getElementById('serveCue');
+      var countdown = document.getElementById('serveCountdown');
+      var controller = document.getElementById('controllerServeStatus');
+
+      function renderServeReadiness(next) {
+        var serveIn = next && next.phase === 'running' ? Math.max(0, Number(next.serveIn) || 0) : 0;
+        var waiting = serveIn > 0;
+        cue.hidden = !waiting;
+        controller.hidden = !waiting || player === 'screen';
+        if (!waiting) {
+          cue.style.setProperty('--serve-progress', 0);
+          return;
+        }
+        var tenths = Math.max(1, Math.ceil(serveIn / 100));
+        var seconds = (tenths / 10).toFixed(1);
+        countdown.textContent = seconds;
+        controller.textContent = 'LIGHT IN ' + seconds + 's · PREPARE';
+        cue.style.setProperty('--serve-progress', Math.min(1, serveIn / 1000));
+      }
+
+      var events = new EventSource(base + '/events?room=AXM1');
+      events.onmessage = function (event) {
+        try { renderServeReadiness(JSON.parse(event.data)); } catch (error) {}
+      };
+      fetch(base + '/state?room=AXM1')
+        .then(function (response) { return response.json(); })
+        .then(renderServeReadiness)
+        .catch(function () {});
+    })();
+  </script>
   <script src="neon-pong-duet.js"></script>
 </body>
 </html>

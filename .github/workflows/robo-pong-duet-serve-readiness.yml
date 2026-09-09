@@ -1,0 +1,57 @@
+name: Robo Pong Duet serve readiness
+
+on:
+  pull_request:
+    paths:
+      - 'games/002-robo-pong/runtime/neon-pong-duet-client.html'
+      - 'tests/robo-pong-duet-serve-feedback.test.cjs'
+      - 'tests/robo-pong-duet-serve-browser.mjs'
+      - '.github/workflows/robo-pong-duet-serve-readiness.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    name: Contract · Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Exact inline realization contract
+        run: node --test tests/robo-pong-duet-serve-feedback.test.cjs
+      - name: Present Duet runtime syntax
+        run: |
+          node --check games/002-robo-pong/runtime/neon-pong-duet-server.cjs
+          node --check games/002-robo-pong/runtime/neon-pong-duet.js
+
+  chromium:
+    name: Real Duet surface · Chromium
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install CI-only Chromium driver
+        run: npm install --no-save --ignore-scripts playwright@1.55.0
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Exercise live server, shared screen, and phone controller
+        run: |
+          mkdir -p test-artifacts/duet-serve-readiness
+          node tests/robo-pong-duet-serve-browser.mjs
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: duet-serve-readiness-${{ github.sha }}
+          path: test-artifacts/duet-serve-readiness
+          if-no-files-found: warn
