@@ -24,8 +24,8 @@ jobs:
       - name: Run focused generator tests
         run: node --test tests/capability-registry.test.cjs
 
-      - name: Generate capability registry from real catalog and manifests
-        run: node tools/generate-capability-registry.cjs
+      - name: Verify committed registry matches real catalog and manifests
+        run: node tools/generate-capability-registry.cjs --check
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -39,7 +39,7 @@ jobs:
           ref: 1a94fc2481d1cfc9234dea7c86af4777126d3924
           path: .integration/discovery-buddy
 
-      - name: Prove Discovery Buddy can consume the generated registry
+      - name: Prove Discovery Buddy can consume the committed registry
         env:
           PYTHONPATH: .integration/discovery-buddy
         run: |
@@ -50,21 +50,14 @@ jobs:
 
           data = json.loads(Path('/tmp/axm-discovery/public-discovery.json').read_text('utf-8'))
           assert data['summary']['repositories'] == 1, data['summary']
-          assert data['summary']['capability_records'] >= 10, data['summary']
+          assert data['summary']['capability_records'] == 26, data['summary']
           repo = data['repositories'][0]
           assert repo['repo'] == 'mike-axiom-mir/axm-local-game-hub', repo
           sources = repo['capabilities']['sources']
-          assert any(s['path'] == 'registry/capabilities.jsonl' and s.get('errors', 0) == 0 for s in sources), sources
+          assert any(s['path'] == 'registry/capabilities.jsonl' and s.get('errors', 0) == 0 and s.get('records') == 26 for s in sources), sources
           rows = {row['id']: row for row in repo['capabilities']['records']}
           assert '003-robo-pong-cross' in rows['axm-semantic-input-v1']['consumers']
           assert '012-pulse-choir' in rows['axm-semantic-input-v1']['consumers']
           assert '003-robo-pong-cross' in rows['axm-seat-screen-semantics-v1']['consumers']
-          print(f"Discovery Buddy consumed {len(rows)} Local Game Hub capability rows")
+          print('Discovery Buddy consumed all 26 committed Local Game Hub capability rows')
           PY
-
-      - name: Emit generated evidence for this bootstrap run
-        run: |
-          echo '--- registry/capabilities.jsonl ---'
-          cat registry/capabilities.jsonl
-          echo '--- registry/capabilities.receipt.json ---'
-          cat registry/capabilities.receipt.json
