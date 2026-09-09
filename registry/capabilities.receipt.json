@@ -1,0 +1,41 @@
+{
+  "schema": "axm.local-game-hub.capability-registry-receipt/v1",
+  "generator": "tools/generate-capability-registry.cjs",
+  "inputs": [
+    {
+      "id": "catalog",
+      "path": "catalog.json",
+      "canonical_sha256": "80520c4092a628d2293b4614a1a419b9778a75b6ae3d5a5a39a4d86d7530003a"
+    },
+    {
+      "id": "manifest:002-robo-pong",
+      "path": "games/002-robo-pong/game.manifest.json",
+      "canonical_sha256": "f4b930b2e92d130de7272f834a7d3949797ada379b1ed3c211ea40e0bde8aec6"
+    },
+    {
+      "id": "manifest:003-robo-pong-cross",
+      "path": "games/003-robo-pong-cross/game.manifest.json",
+      "canonical_sha256": "88412080885d45282bf6634f0c413a66575837352477d675d363a44915ede8e3"
+    },
+    {
+      "id": "manifest:006-lumenwake",
+      "path": "games/006-lumenwake/game.manifest.json",
+      "canonical_sha256": "8d12bdb30293fef77ee9d8a86e71851f88dea97f967a3652ee8b620035c23584"
+    },
+    {
+      "id": "manifest:012-pulse-choir",
+      "path": "games/012-pulse-choir/game.manifest.json",
+      "canonical_sha256": "ede6afa9af5608d451b1b8173fb4fde2a7043dcc0bc65ece96caa8a9645f7315"
+    }
+  ],
+  "output": {
+    "path": "registry/capabilities.jsonl",
+    "records": 26,
+    "sha256": "0b9e8fd9c7d1a0ca07975a9985ae2a2df3266a771b8e03ea86fb899918363bc2"
+  },
+  "truth": {
+    "declarations_are_runtime_proof": false,
+    "grants_authority": false,
+    "source_is_catalog_and_game_manifests": true
+  }
+}
