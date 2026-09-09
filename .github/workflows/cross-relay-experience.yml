@@ -1,0 +1,60 @@
+name: Cross relay experience
+
+on:
+  pull_request:
+    paths:
+      - 'games/003-robo-pong-cross/runtime/neon-pong-cross-client.html'
+      - 'tests/cross-relay-coach.test.cjs'
+      - 'tests/cross-relay-browser.cjs'
+      - '.github/workflows/cross-relay-experience.yml'
+  push:
+    branches:
+      - 'automation/experience-cross-relay-coordination-20260909'
+    paths:
+      - 'games/003-robo-pong-cross/runtime/neon-pong-cross-client.html'
+      - 'tests/cross-relay-coach.test.cjs'
+      - 'tests/cross-relay-browser.cjs'
+      - '.github/workflows/cross-relay-experience.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  relay-contract:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [18, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Syntax
+        run: node --check tests/cross-relay-coach.test.cjs
+      - name: Relay experience contract
+        run: node --test tests/cross-relay-coach.test.cjs
+
+  real-browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser test dependency
+        run: npm install --no-save --package-lock=false playwright@1.55.0
+      - name: Exercise real Cross shared screen and phone controller
+        shell: bash
+        env:
+          AXM_EVIDENCE_DIR: ${{ runner.temp }}/cross-relay-evidence
+        run: |
+          browser="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$browser"
+          AXM_BROWSER_EXECUTABLE="$browser" node tests/cross-relay-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cross-relay-render-evidence
+          path: ${{ runner.temp }}/cross-relay-evidence
+          if-no-files-found: ignore
