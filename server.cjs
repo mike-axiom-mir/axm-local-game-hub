@@ -6,6 +6,7 @@ const fs = require('fs');
 const http = require('http');
 const os = require('os');
 const path = require('path');
+const { terminateChild } = require('./lib/runtime-process.cjs');
 
 const ROOT = __dirname;
 const CATALOG = JSON.parse(fs.readFileSync(path.join(ROOT, 'catalog.json'), 'utf8'));
@@ -158,15 +159,8 @@ function activeView() {
 async function stopActive(reason) {
   if (!active) return null;
   const current = active;
-  active = null;
-  if (current.child && current.child.exitCode === null && !current.child.killed) {
-    current.child.kill('SIGTERM');
-    await Promise.race([
-      new Promise(resolve => current.child.once('exit', resolve)),
-      new Promise(resolve => setTimeout(resolve, 900))
-    ]);
-    if (current.child.exitCode === null && !current.child.killed) current.child.kill('SIGKILL');
-  }
+  await terminateChild(current.child);
+  if (active === current) active = null;
   return { gameId: current.game.id, reason: reason || 'host-stop' };
 }
 
