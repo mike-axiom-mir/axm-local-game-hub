@@ -57,3 +57,24 @@ Do not enable it on an untrusted public Wi-Fi network.
 Read [LICENSE_STATUS.md](LICENSE_STATUS.md) before redistributing or
 incorporating the package into another product.
 
+## Optional Causal Loop capability
+
+The Hub can consume the deterministic train-platform process adapter proposed
+in `mike-axiom-mir/axm-casual-loop` PR #8. This is an optional local lab
+boundary, not a fifth bundled game: the four-game catalog and one-active-game
+rule remain unchanged.
+
+Set `AXM_CAUSAL_LOOP_ENTRY` to the adapter's absolute
+`scripts/causal_loop_ndjson.py` path before starting the Hub. Set
+`AXM_CAUSAL_LOOP_PYTHON` only when `python3` is not the right Python 3.11+
+executable. Then use:
+
+- `GET /api/capabilities/causal-loop` to inspect compatibility;
+- `POST /api/capabilities/causal-loop/run` with `timedInfluences` and optional
+  `maxWaves` to run and immediately replay-verify a receipt.
+
+The provider is started without a shell and receives only a small runtime
+environment allowlist. Missing, malformed, timed-out, or incompatible providers
+return an explicit `HOLD`; normal Hub startup and bundled games keep working.
+Read [docs/CAUSAL_LOOP_PROVIDER.md](docs/CAUSAL_LOOP_PROVIDER.md) for the exact
+contract, example, and trust boundary.
