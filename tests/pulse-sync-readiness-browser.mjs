@@ -58,7 +58,7 @@ try {
     await route.fulfill({ response, body: JSON.stringify(packet), headers: { ...response.headers(), 'content-type': 'application/json; charset=utf-8' } });
   });
 
-  await page.goto(`${origin}/games/012/?room=AXM1&player=screen`, { waitUntil: 'networkidle' });
+  await page.goto(`${origin}/games/012/?room=AXM1&player=screen`, { waitUntil: 'domcontentloaded' });
   const banner = page.locator('#syncBanner');
   await banner.waitFor({ state: 'visible' });
   await page.getByText('1 / 3 READY', { exact: true }).waitFor();
