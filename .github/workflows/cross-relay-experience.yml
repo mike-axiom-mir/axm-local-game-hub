@@ -44,12 +44,14 @@ jobs:
           node-version: 22
       - name: Install browser test dependency
         run: npm install --no-save --package-lock=false playwright@1.55.0
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
       - name: Exercise real Cross shared screen and phone controller
+        shell: bash
         env:
           AXM_EVIDENCE_DIR: ${{ runner.temp }}/cross-relay-evidence
-        run: node tests/cross-relay-browser.cjs
+        run: |
+          browser="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$browser"
+          AXM_BROWSER_EXECUTABLE="$browser" node tests/cross-relay-browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
