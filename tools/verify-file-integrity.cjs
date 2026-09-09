@@ -6,6 +6,7 @@ const fsp = require('node:fs/promises');
 const path = require('node:path');
 
 const MANIFEST_NAME = 'FILE_INTEGRITY.json';
+const AMENDMENTS_NAME = 'FILE_INTEGRITY_AMENDMENTS.json';
 const BUILD_RECEIPT_NAME = 'BUILD_RECEIPT.json';
 const DISTRIBUTION_SOURCE_NAME = 'DISTRIBUTION_SOURCE.json';
 
@@ -28,6 +29,12 @@ function validateRelativePath(value) {
   return value;
 }
 
+function validateSeal(entry, label) {
+  assertPlainObject(entry, label);
+  assert(Number.isSafeInteger(entry.bytes) && entry.bytes >= 0, `${label} has an invalid byte count`);
+  assert(typeof entry.sha256 === 'string' && /^[0-9a-f]{64}$/.test(entry.sha256), `${label} has an invalid sha256`);
+}
+
 function validateManifestStructure(manifest) {
   assertPlainObject(manifest, 'integrity manifest');
   assert(manifest.schema === 'axm.file-integrity/v1', `unsupported integrity schema: ${manifest.schema}`);
@@ -41,13 +48,49 @@ function validateManifestStructure(manifest) {
     assertPlainObject(entry, `manifest files[${index}]`);
     const rel = validateRelativePath(entry.path);
     assert(rel !== MANIFEST_NAME, `${MANIFEST_NAME} must not recursively seal itself`);
+    assert(rel !== AMENDMENTS_NAME, `${AMENDMENTS_NAME} must not recursively amend itself`);
     assert(!seen.has(rel), `duplicate manifest path: ${rel}`);
     seen.add(rel);
-    assert(Number.isSafeInteger(entry.bytes) && entry.bytes >= 0, `invalid byte count for ${rel}`);
-    assert(typeof entry.sha256 === 'string' && /^[0-9a-f]{64}$/.test(entry.sha256), `invalid sha256 for ${rel}`);
+    validateSeal(entry, `manifest entry ${rel}`);
   }
 
   return seen;
+}
+
+function gitBlobSha1(buffer) {
+  return crypto.createHash('sha1').update(`blob ${buffer.length}\0`).update(buffer).digest('hex');
+}
+
+function validateAmendments(amendments, manifest, manifestBuffer) {
+  if (amendments === null) return new Map();
+  assertPlainObject(amendments, 'integrity amendments');
+  assert(amendments.schema === 'axm.file-integrity-amendments/v1', `unsupported amendments schema: ${amendments.schema}`);
+  assertPlainObject(amendments.base, 'integrity amendments base');
+  assert(amendments.base.manifest === MANIFEST_NAME, `amendments base manifest must be ${MANIFEST_NAME}`);
+  const actualBaseSha = gitBlobSha1(manifestBuffer);
+  assert(amendments.base.gitBlobSha1 === actualBaseSha,
+    `amendments target manifest blob ${amendments.base.gitBlobSha1} does not match checkout ${actualBaseSha}`);
+  assert(Array.isArray(amendments.amendments), 'integrity amendments amendments must be an array');
+
+  const baseByPath = new Map(manifest.files.map((entry) => [entry.path, entry]));
+  const effective = new Map();
+  for (const [index, amendment] of amendments.amendments.entries()) {
+    assertPlainObject(amendment, `integrity amendment[${index}]`);
+    const rel = validateRelativePath(amendment.path);
+    assert(!effective.has(rel), `duplicate integrity amendment path: ${rel}`);
+    const baseEntry = baseByPath.get(rel);
+    assert(baseEntry, `integrity amendment targets an unsealed path: ${rel}`);
+    validateSeal(amendment.previous, `integrity amendment previous ${rel}`);
+    validateSeal(amendment.current, `integrity amendment current ${rel}`);
+    assert(amendment.previous.bytes === baseEntry.bytes && amendment.previous.sha256 === baseEntry.sha256,
+      `integrity amendment previous seal does not match base manifest for ${rel}`);
+    assert(typeof amendment.sourceCommit === 'string' && /^[0-9a-f]{40}$/.test(amendment.sourceCommit),
+      `integrity amendment sourceCommit is invalid for ${rel}`);
+    assert(typeof amendment.reason === 'string' && amendment.reason.trim().length > 0,
+      `integrity amendment reason is missing for ${rel}`);
+    effective.set(rel, { path: rel, ...amendment.current });
+  }
+  return effective;
 }
 
 function validateContractIdentity(manifest, buildReceipt, source) {
@@ -72,17 +115,29 @@ function validateContractIdentity(manifest, buildReceipt, source) {
     `sealed file count ${manifest.files.length} does not match build receipt expectation ${expectedSealedFiles}`);
 }
 
-async function readJson(filePath, label) {
-  let text;
+async function readBuffer(filePath, label) {
   try {
-    text = await fsp.readFile(filePath, 'utf8');
+    return await fsp.readFile(filePath);
   } catch (error) {
     throw new Error(`${label} could not be read: ${error.message}`);
   }
+}
+
+function parseJson(buffer, label) {
   try {
-    return JSON.parse(text);
+    return JSON.parse(buffer.toString('utf8'));
   } catch (error) {
     throw new Error(`${label} is not valid JSON: ${error.message}`);
+  }
+}
+
+async function readOptionalJson(filePath, label) {
+  try {
+    return parseJson(await fsp.readFile(filePath), label);
+  } catch (error) {
+    if (error && error.code === 'ENOENT') return null;
+    if (error.message && error.message.startsWith(`${label} is not valid JSON:`)) throw error;
+    throw new Error(`${label} could not be read: ${error.message}`);
   }
 }
 
@@ -129,23 +184,29 @@ async function verifyDistribution(rootPath) {
   assert(rootStat.isDirectory(), `distribution root is not a directory: ${root}`);
   assert(!rootStat.isSymbolicLink(), `distribution root must not be a symbolic link: ${root}`);
 
-  const [manifest, buildReceipt, source] = await Promise.all([
-    readJson(path.join(root, MANIFEST_NAME), MANIFEST_NAME),
-    readJson(path.join(root, BUILD_RECEIPT_NAME), BUILD_RECEIPT_NAME),
-    readJson(path.join(root, DISTRIBUTION_SOURCE_NAME), DISTRIBUTION_SOURCE_NAME),
+  const [manifestBuffer, buildReceiptBuffer, sourceBuffer, amendments] = await Promise.all([
+    readBuffer(path.join(root, MANIFEST_NAME), MANIFEST_NAME),
+    readBuffer(path.join(root, BUILD_RECEIPT_NAME), BUILD_RECEIPT_NAME),
+    readBuffer(path.join(root, DISTRIBUTION_SOURCE_NAME), DISTRIBUTION_SOURCE_NAME),
+    readOptionalJson(path.join(root, AMENDMENTS_NAME), AMENDMENTS_NAME),
   ]);
+  const manifest = parseJson(manifestBuffer, MANIFEST_NAME);
+  const buildReceipt = parseJson(buildReceiptBuffer, BUILD_RECEIPT_NAME);
+  const source = parseJson(sourceBuffer, DISTRIBUTION_SOURCE_NAME);
 
   validateManifestStructure(manifest);
+  const amendmentMap = validateAmendments(amendments, manifest, manifestBuffer);
   validateContractIdentity(manifest, buildReceipt, source);
 
-  for (const entry of manifest.files) {
-    await verifySealedFile(root, entry);
+  for (const baseEntry of manifest.files) {
+    await verifySealedFile(root, amendmentMap.get(baseEntry.path) || baseEntry);
   }
 
   return {
     distribution: manifest.distribution,
     version: manifest.version,
     sealedFiles: manifest.files.length,
+    amendments: amendmentMap.size,
     algorithm: manifest.algorithm,
   };
 }
@@ -154,7 +215,7 @@ async function main() {
   const root = process.argv[2] ? path.resolve(process.argv[2]) : process.cwd();
   try {
     const result = await verifyDistribution(root);
-    process.stdout.write(`PASS ${result.distribution} ${result.version}: verified ${result.sealedFiles} sealed files with ${result.algorithm}; ${MANIFEST_NAME} is self-excluded by contract.\n`);
+    process.stdout.write(`PASS ${result.distribution} ${result.version}: verified ${result.sealedFiles} sealed files with ${result.algorithm} (${result.amendments} explicit amendment(s)); ${MANIFEST_NAME} is self-excluded by contract.\n`);
   } catch (error) {
     process.stderr.write(`FAIL package integrity: ${error.message}\n`);
     process.exitCode = 1;
@@ -162,8 +223,10 @@ async function main() {
 }
 
 module.exports = {
+  gitBlobSha1,
   validateRelativePath,
   validateManifestStructure,
+  validateAmendments,
   validateContractIdentity,
   verifyDistribution,
 };

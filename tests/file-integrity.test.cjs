@@ -8,6 +8,7 @@ const path = require('node:path');
 const test = require('node:test');
 
 const {
+  gitBlobSha1,
   validateManifestStructure,
   verifyDistribution,
 } = require('../tools/verify-file-integrity.cjs');
@@ -19,11 +20,7 @@ function digest(buffer) {
 async function makeFixture() {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'axm-hub-integrity-'));
   const payload = Buffer.from('sealed game payload\n');
-  const source = {
-    schema: 'axm.focused-distribution/v1',
-    id: 'fixture-hub',
-    version: 'test-v1',
-  };
+  const source = { schema: 'axm.focused-distribution/v1', id: 'fixture-hub', version: 'test-v1' };
   const buildReceipt = {
     schema: 'axm.focused-distribution-build-receipt/v1',
     distribution: 'fixture-hub',
@@ -41,14 +38,11 @@ async function makeFixture() {
     entries.push({ path: rel, bytes: bytes.length, sha256: digest(bytes) });
   }
   const manifest = {
-    schema: 'axm.file-integrity/v1',
-    algorithm: 'sha256',
-    distribution: 'fixture-hub',
-    version: 'test-v1',
-    files: entries,
+    schema: 'axm.file-integrity/v1', algorithm: 'sha256', distribution: 'fixture-hub', version: 'test-v1', files: entries,
   };
-  await fs.writeFile(path.join(root, 'FILE_INTEGRITY.json'), `${JSON.stringify(manifest, null, 2)}\n`);
-  return { root, manifest };
+  const manifestBuffer = Buffer.from(`${JSON.stringify(manifest, null, 2)}\n`);
+  await fs.writeFile(path.join(root, 'FILE_INTEGRITY.json'), manifestBuffer);
+  return { root, manifest, manifestBuffer };
 }
 
 test('accepts an exact sealed distribution', async (t) => {
@@ -56,6 +50,7 @@ test('accepts an exact sealed distribution', async (t) => {
   t.after(() => fs.rm(root, { recursive: true, force: true }));
   const result = await verifyDistribution(root);
   assert.equal(result.sealedFiles, 3);
+  assert.equal(result.amendments, 0);
 });
 
 test('rejects content tampering even when file length is unchanged', async (t) => {
@@ -63,6 +58,49 @@ test('rejects content tampering even when file length is unchanged', async (t) =
   t.after(() => fs.rm(root, { recursive: true, force: true }));
   await fs.writeFile(path.join(root, 'payload.txt'), Buffer.from('sealed game payloae\n'));
   await assert.rejects(() => verifyDistribution(root), /sha256 mismatch for payload\.txt/);
+});
+
+test('accepts an explicit amendment only when it is bound to the exact base seal', async (t) => {
+  const { root, manifest, manifestBuffer } = await makeFixture();
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const changed = Buffer.from('updated game payload\n');
+  await fs.writeFile(path.join(root, 'payload.txt'), changed);
+  const old = manifest.files.find((entry) => entry.path === 'payload.txt');
+  const amendments = {
+    schema: 'axm.file-integrity-amendments/v1',
+    base: { manifest: 'FILE_INTEGRITY.json', gitBlobSha1: gitBlobSha1(manifestBuffer) },
+    amendments: [{
+      path: 'payload.txt',
+      sourceCommit: '1'.repeat(40),
+      reason: 'intentional fixture update',
+      previous: { bytes: old.bytes, sha256: old.sha256 },
+      current: { bytes: changed.length, sha256: digest(changed) },
+    }],
+  };
+  await fs.writeFile(path.join(root, 'FILE_INTEGRITY_AMENDMENTS.json'), `${JSON.stringify(amendments, null, 2)}\n`);
+  const result = await verifyDistribution(root);
+  assert.equal(result.amendments, 1);
+});
+
+test('rejects an amendment detached from the base manifest or its previous seal', async (t) => {
+  const { root, manifest, manifestBuffer } = await makeFixture();
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const old = manifest.files.find((entry) => entry.path === 'payload.txt');
+  const amendment = {
+    schema: 'axm.file-integrity-amendments/v1',
+    base: { manifest: 'FILE_INTEGRITY.json', gitBlobSha1: '0'.repeat(40) },
+    amendments: [{
+      path: 'payload.txt', sourceCommit: '1'.repeat(40), reason: 'fixture',
+      previous: { bytes: old.bytes, sha256: old.sha256 }, current: { bytes: old.bytes, sha256: old.sha256 },
+    }],
+  };
+  await fs.writeFile(path.join(root, 'FILE_INTEGRITY_AMENDMENTS.json'), `${JSON.stringify(amendment, null, 2)}\n`);
+  await assert.rejects(() => verifyDistribution(root), /does not match checkout/);
+
+  amendment.base.gitBlobSha1 = gitBlobSha1(manifestBuffer);
+  amendment.amendments[0].previous.sha256 = 'f'.repeat(64);
+  await fs.writeFile(path.join(root, 'FILE_INTEGRITY_AMENDMENTS.json'), `${JSON.stringify(amendment, null, 2)}\n`);
+  await assert.rejects(() => verifyDistribution(root), /previous seal does not match base manifest/);
 });
 
 test('rejects byte-length drift before hashing', async (t) => {
@@ -80,14 +118,8 @@ test('rejects a missing sealed file', async (t) => {
 });
 
 test('rejects traversal, Windows-style paths, duplicates, and recursive self-sealing', () => {
-  const base = {
-    schema: 'axm.file-integrity/v1',
-    algorithm: 'sha256',
-    distribution: 'fixture-hub',
-    version: 'test-v1',
-  };
+  const base = { schema: 'axm.file-integrity/v1', algorithm: 'sha256', distribution: 'fixture-hub', version: 'test-v1' };
   const entry = { bytes: 0, sha256: '0'.repeat(64) };
-
   assert.throws(() => validateManifestStructure({ ...base, files: [{ path: '../outside', ...entry }] }), /unsafe segment/);
   assert.throws(() => validateManifestStructure({ ...base, files: [{ path: 'C:\\outside', ...entry }] }), /POSIX separators|Windows drive/);
   assert.throws(() => validateManifestStructure({ ...base, files: [{ path: 'a', ...entry }, { path: 'a', ...entry }] }), /duplicate manifest path/);

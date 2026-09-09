@@ -1,0 +1,22 @@
+{
+  "schema": "axm.file-integrity-amendments/v1",
+  "base": {
+    "manifest": "FILE_INTEGRITY.json",
+    "gitBlobSha1": "8037eb5053664aed4c95770e5a20ce8046bfda8c"
+  },
+  "amendments": [
+    {
+      "path": "LICENSE_STATUS.md",
+      "sourceCommit": "5419ff48cc1fdf99b9719b82cac3b2b318ea9006",
+      "reason": "Preserve the intentional Apache-2.0 license-status alignment without silently rewriting the original proof-of-start seal.",
+      "previous": {
+        "bytes": 841,
+        "sha256": "84567ec1d85480b017aeb7fed0ee3ee969124e274996aedbcd6bbfc01885fdf0"
+      },
+      "current": {
+        "bytes": 692,
+        "sha256": "f45b278417a8f7524204d870501e395d7c2f7e3f02b0924ce2437310812cdf56"
+      }
+    }
+  ]
+}
