@@ -17,6 +17,19 @@
         "bytes": 692,
         "sha256": "f45b278417a8f7524204d870501e395d7c2f7e3f02b0924ce2437310812cdf56"
       }
+    },
+    {
+      "path": "server.cjs",
+      "sourceCommit": "578eb8ebbfd9135fa4ee40bb9bf57a8ae5b357b2",
+      "reason": "Require observed child-process exit before releasing the single active-game slot or starting a replacement runtime.",
+      "previous": {
+        "bytes": 12678,
+        "sha256": "95ed9b12d166f625febdc04e3325828f89d851931e52c74bdd0c423f86ed4987"
+      },
+      "current": {
+        "bytes": 12432,
+        "sha256": "3854e9f21eb184ecb7f737ca113dc6151cac0827a8fdd34d49bae3fd9c9baab7"
+      }
     }
   ]
 }
