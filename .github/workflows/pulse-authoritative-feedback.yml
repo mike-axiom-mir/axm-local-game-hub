@@ -1,0 +1,69 @@
+name: Pulse Choir authoritative feedback
+
+on:
+  pull_request:
+    paths:
+      - 'games/012-pulse-choir/runtime/controller.html'
+      - 'games/012-pulse-choir/runtime/pulse-feedback.js'
+      - 'tests/pulse-authoritative-feedback.test.cjs'
+      - 'tests/pulse-authoritative-feedback-browser.mjs'
+      - '.github/workflows/pulse-authoritative-feedback.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    name: Contract · Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 22]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Assert exact source head
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+      - name: Syntax
+        run: |
+          node --check games/012-pulse-choir/runtime/game-core.js
+          node --check games/012-pulse-choir/runtime/server.js
+          node --check games/012-pulse-choir/runtime/pulse-feedback.js
+      - name: Authoritative receipt contract
+        run: node --test tests/pulse-authoritative-feedback.test.cjs tests/pulse-sync-readiness.test.cjs
+
+  chromium:
+    name: Real Pulse Choir controller · Chromium
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Assert exact source head
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+      - name: Install CI-only Chromium driver
+        run: npm install --no-save --ignore-scripts playwright@1.55.0
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Exercise authoritative phone-input feedback loop
+        run: |
+          mkdir -p test-artifacts/pulse-authoritative-feedback
+          node tests/pulse-authoritative-feedback-browser.mjs
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pulse-authoritative-feedback-${{ github.event.pull_request.head.sha || github.sha }}
+          path: test-artifacts/pulse-authoritative-feedback
+          if-no-files-found: warn
