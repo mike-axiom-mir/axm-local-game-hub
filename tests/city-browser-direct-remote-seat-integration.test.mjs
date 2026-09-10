@@ -9,6 +9,7 @@ import {
   RemoteSeatAdmission,
   createLoopbackRoboPongSubmitter,
   createRemoteSeatPeer,
+  createRemoteSeatSequenceState,
   createSeatInputEnvelope,
   sendRemoteSeatInput,
 } from "../integrations/city-browser-direct/robo-pong-remote-seat.mjs";
@@ -60,6 +61,16 @@ class FakeRTC extends EventTarget {
   close() { this.connectionState = "closed"; }
 }
 
+async function connectPeers() {
+  const host = createRemoteSeatPeer(cityBrowserDirect, { rtcFactory: FakeRTC });
+  const guest = createRemoteSeatPeer(cityBrowserDirect, { rtcFactory: FakeRTC });
+  const offer = await host.createOffer({ expiresInSeconds: 60 });
+  const answer = await guest.acceptOffer(offer);
+  await host.acceptAnswer(answer);
+  await Promise.all([host.waitForOpen(), guest.waitForOpen()]);
+  return { host, guest };
+}
+
 async function findFreePort() {
   return new Promise((resolve, reject) => {
     const server = net.createServer();
@@ -102,7 +113,7 @@ function hubRoot() {
   return path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 }
 
-test("installed City browser transport drives one ordinary Robo Pong Cross seat", { timeout: 15000 }, async () => {
+test("installed City browser transport preserves replay protection when the direct peer is replaced", { timeout: 15000 }, async () => {
   const port = await findFreePort();
   const serverPath = path.join(hubRoot(), "games/003-robo-pong-cross/runtime/robo-pong-cross-server.cjs");
   const child = spawn(process.execPath, [serverPath], {
@@ -123,6 +134,10 @@ test("installed City browser transport drives one ordinary Robo Pong Cross seat"
   let stderr = "";
   child.stderr.on("data", (chunk) => { stderr += chunk; });
 
+  let host;
+  let guest;
+  let replacementHost;
+  let replacementGuest;
   try {
     const base = `http://127.0.0.1:${port}`;
     const health = await waitForJson(`${base}/health`);
@@ -132,18 +147,18 @@ test("installed City browser transport drives one ordinary Robo Pong Cross seat"
     assert.equal(before.players.p1.kind, "human");
     const startX = before.paddles.p1.x;
 
-    const host = createRemoteSeatPeer(cityBrowserDirect, { rtcFactory: FakeRTC });
-    const guest = createRemoteSeatPeer(cityBrowserDirect, { rtcFactory: FakeRTC });
-    const offer = await host.createOffer({ expiresInSeconds: 60 });
-    const answer = await guest.acceptOffer(offer);
-    await host.acceptAnswer(answer);
-    await Promise.all([host.waitForOpen(), guest.waitForOpen()]);
-
+    ({ host, guest } = await connectPeers());
+    const sequenceState = createRemoteSeatSequenceState({
+      sessionId: "hub-seat-ci",
+      allowedPlayers: ["p1"],
+    });
+    const submitInput = createLoopbackRoboPongSubmitter({ baseUrl: `${base}/` });
     const admission = new RemoteSeatAdmission({
       peer: host,
       sessionId: "hub-seat-ci",
       allowedPlayers: ["p1"],
-      submitInput: createLoopbackRoboPongSubmitter({ baseUrl: `${base}/` }),
+      sequenceState,
+      submitInput,
     });
 
     const move = createSeatInputEnvelope({ sessionId: "hub-seat-ci", player: "p1", sequence: 1, right: true });
@@ -160,13 +175,32 @@ test("installed City browser transport drives one ordinary Robo Pong Cross seat"
     const stop = createSeatInputEnvelope({ sessionId: "hub-seat-ci", player: "p1", sequence: 2 });
     sendRemoteSeatInput(guest, stop);
     await admission.receiveOnce();
-
-    sendRemoteSeatInput(guest, stop);
-    await assert.rejects(() => admission.receiveOnce(), (error) => error.code === "REPLAYED_INPUT");
+    assert.equal(sequenceState.snapshot().consumedThrough.p1, 2);
 
     host.close();
     guest.close();
+    ({ host: replacementHost, guest: replacementGuest } = await connectPeers());
+    const replacementAdmission = new RemoteSeatAdmission({
+      peer: replacementHost,
+      sessionId: "hub-seat-ci",
+      allowedPlayers: ["p1"],
+      sequenceState,
+      submitInput,
+    });
+
+    sendRemoteSeatInput(replacementGuest, structuredClone(move));
+    await assert.rejects(() => replacementAdmission.receiveOnce(), (error) => error.code === "REPLAYED_INPUT");
+
+    const resumed = createSeatInputEnvelope({ sessionId: "hub-seat-ci", player: "p1", sequence: 3, left: true });
+    sendRemoteSeatInput(replacementGuest, resumed);
+    const resumedReceipt = await replacementAdmission.receiveOnce();
+    assert.equal(resumedReceipt.sequence, 3);
+    assert.equal(sequenceState.snapshot().consumedThrough.p1, 3);
   } finally {
+    host?.close();
+    guest?.close();
+    replacementHost?.close();
+    replacementGuest?.close();
     child.kill("SIGTERM");
     await Promise.race([
       new Promise((resolve) => child.once("exit", resolve)),
