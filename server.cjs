@@ -6,6 +6,7 @@ const fs = require('fs');
 const http = require('http');
 const os = require('os');
 const path = require('path');
+const { buildManagedRuntimeEnv } = require('./lib/managed-runtime-env.cjs');
 
 const ROOT = __dirname;
 const CATALOG = JSON.parse(fs.readFileSync(path.join(ROOT, 'catalog.json'), 'utf8'));
@@ -180,7 +181,7 @@ async function startGame(gameId) {
   const logTail = [];
   const child = childProcess.spawn(process.execPath, [entry], {
     cwd: path.dirname(entry),
-    env: Object.assign({}, process.env, {
+    env: buildManagedRuntimeEnv(process.env, {
       PORT: String(port),
       HOST,
       AXM_FOREST_HOST: HOST,
