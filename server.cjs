@@ -184,6 +184,7 @@ async function startGame(gameId) {
       PORT: String(port),
       HOST,
       AXM_FOREST_HOST: HOST,
+      AXM_ROBO_PONG_HOST: HOST,
       AXM_PLAYERS_JSON: JSON.stringify(players),
       AXM_MANAGED_BY_GAME_HUB: '1',
       AXM_GAME_ID: game.id,
