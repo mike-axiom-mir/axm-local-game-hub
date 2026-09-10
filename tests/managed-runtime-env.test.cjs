@@ -6,10 +6,21 @@ const fs = require('node:fs');
 const http = require('node:http');
 const path = require('node:path');
 const test = require('node:test');
+const { POLICY, buildManagedRuntimeEnv } = require('../lib/managed-runtime-env.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const HUB_PORT = 18890;
 const GAME_PORT_BASE = 18900;
+const MANAGED = Object.freeze({
+  PORT: '19002',
+  HOST: '127.0.0.1',
+  AXM_FOREST_HOST: '127.0.0.1',
+  AXM_ROBO_PONG_HOST: '127.0.0.1',
+  AXM_PLAYERS_JSON: '[]',
+  AXM_MANAGED_BY_GAME_HUB: '1',
+  AXM_GAME_ID: 'fixture-game',
+  AXM_GAME_HUB_CALLBACK_URL: 'http://127.0.0.1:18890',
+});
 
 function request(method, requestPath, body) {
   const payload = body === undefined ? null : Buffer.from(JSON.stringify(body));
@@ -93,6 +104,40 @@ async function terminate(child) {
   if (child.exitCode === null) child.kill('SIGKILL');
 }
 
+test('managed runtime environment copies only bounded compatibility state and exact Hub controls', () => {
+  const env = buildManagedRuntimeEnv({
+    PATH: '/safe/path',
+    HOME: '/home/example',
+    LANG: 'en_US.UTF-8',
+    OPENAI_API_KEY: 'secret',
+    GITHUB_TOKEN: 'secret',
+    NODE_OPTIONS: '--require ./unexpected.js',
+    HTTP_PROXY: 'http://proxy.invalid',
+    AXM_GAME_ID: 'parent-must-not-win',
+  }, MANAGED);
+
+  assert.equal(env.PATH, '/safe/path');
+  assert.equal(env.HOME, '/home/example');
+  assert.equal(env.LANG, 'en_US.UTF-8');
+  assert.equal(env.AXM_GAME_ID, 'fixture-game');
+  assert.equal(env.AXM_MANAGED_RUNTIME_ENV_POLICY, POLICY);
+  assert.equal(env.OPENAI_API_KEY, undefined);
+  assert.equal(env.GITHUB_TOKEN, undefined);
+  assert.equal(env.NODE_OPTIONS, undefined);
+  assert.equal(env.HTTP_PROXY, undefined);
+  assert.equal(Object.isFrozen(env), true);
+});
+
+test('managed runtime environment rejects undeclared control widening', () => {
+  assert.throws(
+    () => buildManagedRuntimeEnv({}, { ...MANAGED, UNREVIEWED_CHILD_AUTHORITY: '1' }),
+    /unsupported managed runtime environment key/,
+  );
+  const incomplete = { ...MANAGED };
+  delete incomplete.AXM_GAME_ID;
+  assert.throws(() => buildManagedRuntimeEnv({}, incomplete), /missing managed runtime environment key: AXM_GAME_ID/);
+});
+
 test('Hub does not leak unrelated parent environment into a managed game', { skip: process.platform !== 'linux' }, async () => {
   const inheritedPath = process.env.PATH || '';
   const hub = childProcess.spawn(process.execPath, [path.join(ROOT, 'server.cjs')], {
@@ -127,6 +172,7 @@ test('Hub does not leak unrelated parent environment into a managed game', { ski
     assert.equal(observed.env.AXM_GAME_ID, '002-robo-pong');
     assert.equal(observed.env.HOST, '127.0.0.1');
     assert.equal(observed.env.AXM_ROBO_PONG_HOST, '127.0.0.1');
+    assert.equal(observed.env.AXM_MANAGED_RUNTIME_ENV_POLICY, POLICY);
     if (inheritedPath) assert.equal(observed.env.PATH, inheritedPath);
 
     for (const forbidden of [
