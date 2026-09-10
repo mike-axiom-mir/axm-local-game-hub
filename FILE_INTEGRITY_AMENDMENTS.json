@@ -20,14 +20,14 @@
     },
     {
       "path": "server.cjs",
-      "sourceCommit": "e334234b2b5df793f905018b9ab118f700030647",
-      "reason": "Bind managed Robo Pong runtimes to the Hub's existing default-local versus explicit-LAN network policy without rewriting the original proof-of-start seal.",
+      "sourceCommit": "3e4317f96aa90ff29cfd933c852a79c48924e2aa",
+      "reason": "Preserve the managed runtime bind policy from PR #17 and additionally minimize parent-environment inheritance at the same child-process boundary without rewriting the original proof-of-start seal.",
       "previous": {
         "bytes": 12678,
         "sha256": "95ed9b12d166f625febdc04e3325828f89d851931e52c74bdd0c423f86ed4987"
       },
       "current": {
-        "bytes": 12710,
+        "bytes": 12792,
         "sha256": "e2328753e4acbcdb57e7159b49c3f3ea68a5e17acef5b0b63ba42ddc51033aba"
       }
     },
