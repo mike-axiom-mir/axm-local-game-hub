@@ -119,9 +119,10 @@ function classifyBrowserNoise(receipts) {
     const phoneBaseline = await readState();
     assert.equal(phoneBaseline.mission.core, coreBefore, 'phone baseline must observe the pre-miss core value');
 
-    // Test mode establishes the miss position only. checkGoals -> coopMiss owns
-    // the actual canonical core decrement on the next real simulation tick.
-    await patchState({ ball: { x: 500, y: 1040, vx: 0, vy: 0, active: true, serveAt: 0 } });
+    // Test mode establishes the miss position only. A small nonzero velocity is
+    // required because updateBall intentionally skips stationary balls; the real
+    // checkGoals -> coopMiss path owns the canonical decrement on the next tick.
+    await patchState({ ball: { x: 500, y: 1040, vx: 0, vy: 120, active: true, serveAt: 0 } });
     await phone.waitForFunction(() => document.querySelector('#crossImpactPhone') && document.querySelector('#crossImpactPhone').classList.contains('active') && /CORE HIT/.test(document.querySelector('#crossImpactPhoneLabel').textContent));
     const afterCore = await readState();
     assert.equal(afterCore.mission.core, coreBefore - 1, 'real missed edge must remove exactly one shared-core point');
