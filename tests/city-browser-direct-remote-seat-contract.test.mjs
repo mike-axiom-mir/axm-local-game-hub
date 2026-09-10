@@ -86,6 +86,29 @@ test("admission accepts only explicitly selected seats and increasing sequences"
   assert.equal(submitted.length, 1);
 });
 
+test("replacing the peer admission does not reopen an already consumed sequence", async () => {
+  const envelope = createSeatInputEnvelope({ sessionId: "session-reconnect", player: "p1", sequence: 1, right: true });
+  const submitted = [];
+  const submitInput = async (entry) => { submitted.push(entry); return { ok: true, player: entry.player }; };
+
+  const firstAdmission = new RemoteSeatAdmission({
+    peer: new FakePeer([envelope]),
+    sessionId: "session-reconnect",
+    allowedPlayers: ["p1"],
+    submitInput,
+  });
+  await firstAdmission.receiveOnce();
+
+  const replacementAdmission = new RemoteSeatAdmission({
+    peer: new FakePeer([structuredClone(envelope)]),
+    sessionId: "session-reconnect",
+    allowedPlayers: ["p1"],
+    submitInput,
+  });
+  await assert.rejects(() => replacementAdmission.receiveOnce(), (error) => error.code === "REPLAYED_INPUT");
+  assert.equal(submitted.length, 1);
+});
+
 test("wrong application session is rejected before game submission", async () => {
   const peer = new FakePeer([createSeatInputEnvelope({ sessionId: "wrong", player: "p1", sequence: 1, left: true })]);
   let calls = 0;
