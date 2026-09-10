@@ -80,6 +80,9 @@ try {
   }
   await page.getByText('PULSE HELD', { exact: true }).waitFor();
   await page.getByText(/ROUND NOT PLAYING/).waitFor();
+  await page.waitForTimeout(380);
+  const heldAfterPolling = await page.locator('#pulseReceipt').evaluate(node => !node.hidden && node.dataset.kind === 'held' && node.textContent.includes('PULSE HELD'));
+  if (!heldAfterPolling) throw new Error('held receipt disappeared during the controller observation poll');
   await page.screenshot({ path: path.join(artifactDir, 'pulse-held-countdown-mobile.png'), fullPage: true });
 
   await waitForPhase('playing');
@@ -129,6 +132,7 @@ try {
     ok: true,
     surface: 'real Pulse Choir server + exact phone controller HTML/CSS/JS',
     authoritativeHold: 'countdown pulse -> HTTP 409 round-not-playing -> PULSE HELD',
+    heldReceiptSurvivedObservationPoll: heldAfterPolling,
     authoritativeBuffer: 'playing pulse -> HTTP 200 buffered:true -> BUFFER ACCEPTED',
     expectedBrowser409ConsoleReceipts: expectedConflictConsole.length,
     bufferWindowMs: 240,
