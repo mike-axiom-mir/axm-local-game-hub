@@ -119,20 +119,36 @@ try {
     'real physics loop did not produce a P1 return'
   );
 
+  // Freeze only after the real collision has happened. This holds one exact
+  // perceptual checkpoint so the returning ball cannot reach P2 and overwrite
+  // the short P1 receipt while Chromium is measuring it.
+  stage = 'hold-return-checkpoint';
+  await post('/test/set', { ball: { vx: 0, vy: 0 } });
+
   stage = 'wait-presentations';
-  await screen.waitForSelector('#returnImpact.show', { timeout: 1200 });
-  await phone.waitForSelector('#controllerReturnStatus:not([hidden])', { timeout: 1200 });
+  await screen.waitForFunction(() => {
+    const impact = document.getElementById('returnImpact');
+    const label = document.getElementById('returnImpactLabel');
+    return impact.classList.contains('show') && / · RETURN$/.test(label.textContent || '');
+  }, null, { timeout: 1200 });
+  await phone.waitForFunction(() => {
+    const status = document.getElementById('controllerReturnStatus');
+    return !status.hidden && status.textContent === 'YOUR RETURN CONFIRMED';
+  }, null, { timeout: 1200 });
 
   stage = 'measure-presentations';
   const screenReceipt = await screen.evaluate(() => {
     const impact = document.getElementById('returnImpact');
     const label = document.getElementById('returnImpactLabel');
+    const ring = impact.querySelector('.return-impact-ring').getBoundingClientRect();
     return {
       label: label.textContent,
       left: impact.style.left,
       top: impact.style.top,
       color: impact.style.getPropertyValue('--impact-color'),
-      visible: impact.classList.contains('show')
+      visible: impact.classList.contains('show'),
+      ringWidth: ring.width,
+      ringHeight: ring.height
     };
   });
   const phoneReceipt = await phone.evaluate(() => {
@@ -156,6 +172,7 @@ try {
   stage = 'assert-evidence';
   assert.equal(screenReceipt.visible, true);
   assert.match(screenReceipt.label, / · RETURN$/);
+  assert.ok(screenReceipt.ringWidth > 0 && screenReceipt.ringHeight > 0, 'localized impact ring must render perceptible geometry');
   assert.equal(phoneReceipt.text, 'YOUR RETURN CONFIRMED');
   assert.equal(phoneReceipt.hidden, false);
   assert.equal(phoneReceipt.scrollWidth, phoneReceipt.innerWidth, '390px controller must not overflow horizontally');
@@ -163,12 +180,17 @@ try {
   assert.deepEqual(screenErrors, [], 'shared screen must have no page errors');
   assert.deepEqual(phoneErrors, [], 'phone controller must have no page errors');
 
+  const heldState = await state();
+  assert.deepEqual(heldState.scores, returned.scores, 'visual checkpoint hold must not change score truth');
+  assert.equal(heldState.ball.lastTouch, returned.ball.lastTouch, 'visual checkpoint hold must preserve authoritative return ownership');
+
   const receipt = {
     ok: true,
     authoritativeEvent: returned.event,
     authoritativeEventAt: returned.eventAt,
     authoritativeLastTouch: returned.ball.lastTouch,
     canonicalScore: returned.scores,
+    heldCanonicalScore: heldState.scores,
     screen: screenReceipt,
     phone: phoneReceipt,
     pageErrors: { screen: screenErrors, phone: phoneErrors },
