@@ -74,7 +74,7 @@ test('desk escapes displayed provider fields rather than creating markup', () =>
   const html = renderDesk(sample, 'http://127.0.0.1:4444/?x=<unsafe>');
   assert.doesNotMatch(html, /<img src=x/);
   assert.match(html, /&lt;img src=x onerror=alert\(1\)&gt;/);
-  assert.match(html, /href="http:\/\/127\.0\.0\.1:4444\/?x=&lt;unsafe&gt;"/);
+  assert.match(html, /href="http:\/\/127\.0\.0\.1:4444\/\?x=&lt;unsafe&gt;"/);
 });
 
 test('desk is loopback-read-only presentation with explicit browser policy', async () => {
