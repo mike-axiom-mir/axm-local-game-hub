@@ -73,6 +73,22 @@ async function startStaticServer() {
   return { server, origin: `http://127.0.0.1:${port}` };
 }
 
+async function connectBrowserPeers(host, guest) {
+  const offer = await host.evaluate(async () => {
+    window.peer = window.bridge.createRemoteSeatPeer(window.cityBrowserDirect);
+    return window.peer.createOffer({ expiresInSeconds: 60 });
+  });
+  const answer = await guest.evaluate(async (token) => {
+    window.peer = window.bridge.createRemoteSeatPeer(window.cityBrowserDirect);
+    return window.peer.acceptOffer(token);
+  }, offer);
+  await host.evaluate((token) => window.peer.acceptAnswer(token), answer);
+  await Promise.all([
+    host.evaluate(() => window.peer.waitForOpen()),
+    guest.evaluate(() => window.peer.waitForOpen()),
+  ]);
+}
+
 const gamePort = await findFreePort();
 const gameServerPath = path.join(hubRoot, "games/003-robo-pong-cross/runtime/robo-pong-cross-server.cjs");
 const gameChild = spawn(process.execPath, [gameServerPath], {
@@ -122,26 +138,20 @@ try {
     guest.waitForFunction(() => window.AXM_READY === true),
   ]);
 
-  const offer = await host.evaluate(async () => {
-    window.peer = window.bridge.createRemoteSeatPeer(window.cityBrowserDirect);
-    return window.peer.createOffer({ expiresInSeconds: 60 });
-  });
-  const answer = await guest.evaluate(async (token) => {
-    window.peer = window.bridge.createRemoteSeatPeer(window.cityBrowserDirect);
-    return window.peer.acceptOffer(token);
-  }, offer);
-  await host.evaluate((token) => window.peer.acceptAnswer(token), answer);
-  await Promise.all([
-    host.evaluate(() => window.peer.waitForOpen()),
-    guest.evaluate(() => window.peer.waitForOpen()),
-  ]);
+  await connectBrowserPeers(host, guest);
 
   await host.evaluate((baseUrl) => {
+    window.sequenceState = window.bridge.createRemoteSeatSequenceState({
+      sessionId: "browser-seat-ci",
+      allowedPlayers: ["p1"],
+    });
+    window.submitInput = window.bridge.createLoopbackRoboPongSubmitter({ baseUrl });
     window.admission = new window.bridge.RemoteSeatAdmission({
       peer: window.peer,
       sessionId: "browser-seat-ci",
       allowedPlayers: ["p1"],
-      submitInput: window.bridge.createLoopbackRoboPongSubmitter({ baseUrl }),
+      sequenceState: window.sequenceState,
+      submitInput: window.submitInput,
     });
   }, `${gameBase}/`);
 
@@ -174,6 +184,56 @@ try {
   });
   await host.evaluate(() => window.admission.receiveOnce());
 
+  // Replace the actual RTCPeerConnection/DataChannel pair but preserve the
+  // caller-owned application-session replay state on the host page.
+  await Promise.all([
+    host.evaluate(() => window.peer.close()),
+    guest.evaluate(() => window.peer.close()),
+  ]);
+  await connectBrowserPeers(host, guest);
+  await host.evaluate(() => {
+    window.admission = new window.bridge.RemoteSeatAdmission({
+      peer: window.peer,
+      sessionId: "browser-seat-ci",
+      allowedPlayers: ["p1"],
+      sequenceState: window.sequenceState,
+      submitInput: window.submitInput,
+    });
+  });
+
+  await guest.evaluate(() => {
+    const replay = window.bridge.createSeatInputEnvelope({
+      sessionId: "browser-seat-ci",
+      player: "p1",
+      sequence: 1,
+      right: true,
+    });
+    window.bridge.sendRemoteSeatInput(window.peer, replay);
+  });
+  const replayCode = await host.evaluate(async () => {
+    try {
+      await window.admission.receiveOnce();
+      return "UNEXPECTEDLY_ACCEPTED";
+    } catch (error) {
+      return error?.code || error?.name || "UNKNOWN_ERROR";
+    }
+  });
+  assert.equal(replayCode, "REPLAYED_INPUT");
+
+  await guest.evaluate(() => {
+    const resumed = window.bridge.createSeatInputEnvelope({
+      sessionId: "browser-seat-ci",
+      player: "p1",
+      sequence: 3,
+      left: true,
+    });
+    window.bridge.sendRemoteSeatInput(window.peer, resumed);
+  });
+  const resumedReceipt = await host.evaluate(() => window.admission.receiveOnce());
+  assert.equal(resumedReceipt.sequence, 3);
+  const sequenceSnapshot = await host.evaluate(() => window.sequenceState.snapshot());
+  assert.equal(sequenceSnapshot.consumedThrough.p1, 3);
+
   assert.deepEqual(pageErrors, []);
   console.log(JSON.stringify({
     status: "PASS",
@@ -184,6 +244,8 @@ try {
     startX,
     movedX: moved.paddles.p1.x,
     directOnly: true,
+    peerReplacementReplayCode: replayCode,
+    resumedSequence: resumedReceipt.sequence,
   }));
 } finally {
   await browser.close();
