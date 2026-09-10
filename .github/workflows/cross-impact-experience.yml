@@ -1,0 +1,73 @@
+name: Cross impact experience
+
+on:
+  pull_request:
+    paths:
+      - 'games/003-robo-pong-cross/runtime/neon-pong-cross-client.html'
+      - 'games/003-robo-pong-cross/runtime/neon-pong-cross-server.cjs'
+      - 'games/003-robo-pong-cross/runtime/neon-pong-cross.js'
+      - 'tests/cross-impact-feedback.test.cjs'
+      - 'tests/cross-impact-browser.cjs'
+      - 'tests/cross-relay-coach.test.cjs'
+      - 'tests/cross-relay-browser.cjs'
+      - '.github/workflows/cross-impact-experience.yml'
+  push:
+    branches:
+      - 'automation/experience-cross-impact-feedback-20260910'
+
+permissions:
+  contents: read
+
+jobs:
+  impact-contract:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [18, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Syntax
+        run: |
+          node --check games/003-robo-pong-cross/runtime/neon-pong-cross-server.cjs
+          node --check games/003-robo-pong-cross/runtime/neon-pong-cross.js
+          node --check tests/cross-impact-feedback.test.cjs
+          node --check tests/cross-impact-browser.cjs
+      - name: Impact and prerequisite relay contracts
+        run: node --test tests/cross-relay-coach.test.cjs tests/cross-impact-feedback.test.cjs
+
+  real-browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser test dependency
+        run: npm install --no-save --package-lock=false playwright@1.55.0
+      - name: Exercise prerequisite relay surface
+        shell: bash
+        env:
+          AXM_EVIDENCE_DIR: ${{ runner.temp }}/cross-relay-evidence
+        run: |
+          browser="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$browser"
+          AXM_BROWSER_EXECUTABLE="$browser" node tests/cross-relay-browser.cjs
+      - name: Exercise real Warden and core consequence loops
+        shell: bash
+        env:
+          AXM_EVIDENCE_DIR: ${{ runner.temp }}/cross-impact-evidence
+        run: |
+          browser="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$browser"
+          AXM_BROWSER_EXECUTABLE="$browser" node tests/cross-impact-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cross-impact-render-evidence
+          path: |
+            ${{ runner.temp }}/cross-impact-evidence
+            ${{ runner.temp }}/cross-relay-evidence
+          if-no-files-found: ignore
