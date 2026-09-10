@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 const http=require('http'),fs=require('fs'),path=require('path'),Core=require('./lumenwake-core.cjs');
-const HOST='0.0.0.0',PORT=Number(process.env.PORT||8796),ROOT=__dirname,CLIENT=path.join(ROOT,'lumenwake-client.html'),TICK=1000/30,STREAM=50;
+const HOST=process.env.AXM_FOREST_HOST||process.env.HOST||'0.0.0.0',PORT=Number(process.env.PORT||8796),ROOT=__dirname,CLIENT=path.join(ROOT,'lumenwake-client.html'),TICK=1000/30,STREAM=50;
 function loadSeats(){try{const list=JSON.parse(process.env.AXM_PLAYERS_JSON||'[]');if(Array.isArray(list)&&list.length)return list.slice(0,4);}catch(e){}return[{display_name:'Player 1',type:'human'}];}
 let game=Core.create(loadSeats(),Date.now()),last=Date.now();const inputs={},streams=new Set();Object.keys(game.players).forEach(id=>inputs[id]={moveX:0,moveY:0,action:false,dash:false,updatedAt:0});
 function tick(){const now=Date.now(),dt=Math.min(.08,(now-last)/1000);last=now;Core.step(game,inputs,dt,now);}
