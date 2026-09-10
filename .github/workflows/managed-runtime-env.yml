@@ -9,6 +9,7 @@ on:
       - 'server.cjs'
       - 'lib/managed-runtime-env.cjs'
       - 'tests/managed-runtime-env.test.cjs'
+      - 'tests/runtime-bind-policy.test.cjs'
       - 'FILE_INTEGRITY_AMENDMENTS.json'
       - 'tools/verify-file-integrity.cjs'
       - '.github/workflows/managed-runtime-env.yml'
@@ -36,9 +37,12 @@ jobs:
       - name: Syntax
         run: |
           node --check server.cjs
+          node --check lib/managed-runtime-env.cjs
           node --check tests/managed-runtime-env.test.cjs
-          if [ -f lib/managed-runtime-env.cjs ]; then node --check lib/managed-runtime-env.cjs; fi
+          node --check tests/runtime-bind-policy.test.cjs
       - name: Existing sealed distribution evidence
         run: node tools/verify-file-integrity.cjs .
       - name: Real managed-child environment regression
         run: node --test tests/managed-runtime-env.test.cjs
+      - name: Inherited local-versus-LAN bind regression
+        run: node --test tests/runtime-bind-policy.test.cjs
