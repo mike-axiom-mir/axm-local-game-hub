@@ -1,0 +1,106 @@
+name: Anomaly Garden external launch experience
+
+on:
+  pull_request:
+    paths:
+      - 'integrations/anomaly-garden-static/**'
+      - 'tests/anomaly-garden-static-experience.test.cjs'
+      - 'tests/anomaly-garden-static-experience-browser.cjs'
+      - '.github/workflows/anomaly-garden-external-launch.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  experience-contract:
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 22]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact experience source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Set up Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Assert exact source checkout
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+      - name: Syntax check current bridge and experience
+        run: |
+          node --check integrations/anomaly-garden-static/bridge.cjs
+          node --check integrations/anomaly-garden-static/experience.cjs
+          node --check tests/anomaly-garden-static-consumer.test.cjs
+          node --check tests/anomaly-garden-static-experience.test.cjs
+          node --check tests/anomaly-garden-static-experience-browser.cjs
+      - name: Preserve prerequisite admission contracts
+        run: node --test tests/anomaly-garden-static-consumer.test.cjs
+      - name: External launch desk contracts
+        run: node --test tests/anomaly-garden-static-experience.test.cjs
+
+  real-human-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact experience source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: consumer
+      - name: Checkout pinned Anomaly Garden provider
+        uses: actions/checkout@v4
+        with:
+          repository: mike-axiom-mir/axm-anomaly-garden
+          ref: e9af55a1d1494f3d4f639e16b3bb06279ae8c4ea
+          path: provider
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Assert exact consumer and provider heads
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            test "$(git -C consumer rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+          fi
+          test "$(git -C provider rev-parse HEAD)" = "e9af55a1d1494f3d4f639e16b3bb06279ae8c4ea"
+      - name: Run provider deterministic regressions
+        working-directory: provider
+        run: npm test
+      - name: Run provider completion study
+        working-directory: provider
+        run: npm run study:completion
+      - name: Verify provider through prerequisite bridge
+        shell: bash
+        run: node consumer/integrations/anomaly-garden-static/bridge.cjs verify "$GITHUB_WORKSPACE/provider" | tee consumer/anomaly-garden-static-admission.json
+      - name: Install CI-only Chromium harness
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/axm-playwright"
+          cd "$RUNNER_TEMP/axm-playwright"
+          npm init -y >/dev/null
+          npm install --no-save playwright@1.63.0
+          npx playwright install --with-deps chromium
+      - name: Exercise human gate into real provider
+        shell: bash
+        env:
+          AXM_ANOMALY_GARDEN_ROOT: ${{ github.workspace }}/provider
+          AXM_EVIDENCE_DIR: ${{ github.workspace }}/consumer/artifacts
+          NODE_PATH: ${{ runner.temp }}/axm-playwright/node_modules
+        run: node consumer/tests/anomaly-garden-static-experience-browser.cjs
+      - name: Upload bounded experience evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: anomaly-garden-external-launch-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            consumer/anomaly-garden-static-admission.json
+            consumer/artifacts/anomaly-external-launch-proof.json
+            consumer/artifacts/anomaly-external-launch-desktop.png
+            consumer/artifacts/anomaly-external-launch-mobile.png
+            consumer/artifacts/anomaly-external-launch-world.png
+          if-no-files-found: error
