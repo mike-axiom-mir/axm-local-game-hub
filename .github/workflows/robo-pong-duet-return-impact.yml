@@ -1,0 +1,60 @@
+name: Robo Pong Duet return impact
+
+on:
+  pull_request:
+    paths:
+      - 'games/002-robo-pong/runtime/neon-pong-duet-client.html'
+      - 'tests/robo-pong-duet-return-feedback.test.cjs'
+      - 'tests/robo-pong-duet-return-browser.mjs'
+      - '.github/workflows/robo-pong-duet-return-impact.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    name: Contract · Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Serve and return realization contracts
+        run: node --test tests/robo-pong-duet-serve-feedback.test.cjs tests/robo-pong-duet-return-feedback.test.cjs
+      - name: Present Duet runtime and journey syntax
+        run: |
+          node --check games/002-robo-pong/runtime/neon-pong-duet-server.cjs
+          node --check games/002-robo-pong/runtime/neon-pong-duet.js
+          node --check tests/robo-pong-duet-return-browser.mjs
+
+  chromium:
+    name: Real Duet return · Chromium
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install CI-only Chromium driver
+        run: npm install --no-save --ignore-scripts playwright@1.55.0
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Exercise real server return, shared screen, and phone controller
+        env:
+          AXM_SCREENSHOT_DIR: test-artifacts/duet-return-impact
+        run: |
+          mkdir -p test-artifacts/duet-return-impact
+          node tests/robo-pong-duet-return-browser.mjs
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: duet-return-impact-${{ github.sha }}
+          path: test-artifacts/duet-return-impact
+          if-no-files-found: warn
