@@ -1,0 +1,157 @@
+name: City browser-direct remote seat bridge
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  CITY_PROVIDER_REPO: mike-axiom-mir/axm-city-multiplayer
+  CITY_PROVIDER_HEAD: 256f670d832633159a3d91b9e4f522a438e966b4
+
+jobs:
+  bridge-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Syntax and provider-independent admission contract
+        run: |
+          node --check integrations/city-browser-direct/robo-pong-remote-seat.mjs
+          node --check tests/city-browser-direct-remote-seat-contract.test.mjs
+          node --check tests/city-browser-direct-remote-seat-integration.test.mjs
+          node --check tests/city-browser-direct-remote-seat.chromium.mjs
+          node --check games/003-robo-pong-cross/runtime/robo-pong-cross-server.cjs
+          node --test tests/city-browser-direct-remote-seat-contract.test.mjs
+
+  installed-provider-consumer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
+    steps:
+      - name: Checkout Local Game Hub consumer
+        uses: actions/checkout@v4
+      - name: Checkout exact City Multiplayer provider head
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.CITY_PROVIDER_REPO }}
+          ref: ${{ env.CITY_PROVIDER_HEAD }}
+          path: provider
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Verify exact provider identity and its own executable contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C provider rev-parse HEAD)" = "$CITY_PROVIDER_HEAD"
+          node --test provider/browser/tests/manual_webrtc.test.mjs
+      - name: Pack provider and install into a clean offline consumer
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/axm-city-pack /tmp/axm-hub-consumer
+          mkdir -p /tmp/axm-city-pack /tmp/axm-hub-consumer/integrations/city-browser-direct /tmp/axm-hub-consumer/tests
+          printf '{"name":"axm-hub-city-bridge-ci","private":true,"type":"module"}\n' > /tmp/axm-hub-consumer/package.json
+          npm pack ./provider/packages/browser-direct --pack-destination /tmp/axm-city-pack --json > /tmp/axm-city-pack.json
+          TGZ="$(node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/axm-city-pack.json","utf8"));process.stdout.write("/tmp/axm-city-pack/"+x[0].filename)')"
+          npm install --prefix /tmp/axm-hub-consumer --offline --ignore-scripts --no-audit --no-fund "$TGZ"
+          cp integrations/city-browser-direct/robo-pong-remote-seat.mjs /tmp/axm-hub-consumer/integrations/city-browser-direct/
+          cp tests/city-browser-direct-remote-seat-integration.test.mjs /tmp/axm-hub-consumer/tests/
+          node - <<'NODE'
+          const fs = require('fs');
+          const crypto = require('crypto');
+          const root = '/tmp/axm-hub-consumer/node_modules/axm-city-browser-direct';
+          const provenance = JSON.parse(fs.readFileSync(root + '/PROVENANCE.json', 'utf8'));
+          const capability = JSON.parse(fs.readFileSync(root + '/capability.json', 'utf8'));
+          const providerBytes = fs.readFileSync(root + '/manual_webrtc.mjs');
+          const digest = crypto.createHash('sha256').update(providerBytes).digest('hex');
+          if (provenance.prerequisite.commit !== '4f317c7c3e1b163a48dcbff3ea612bc04846cb1a') throw new Error('provider source prerequisite drift');
+          if (provenance.providerSource.sha256 !== digest) throw new Error('installed provider bytes do not match provenance');
+          if (capability.id !== 'axm.browser-direct/v1') throw new Error('installed provider capability drift');
+          if (capability.provider.relayFallback !== false || capability.provider.iceServers.length !== 0) throw new Error('direct-only provider boundary widened');
+          NODE
+      - name: Real Hub game consumer through installed provider API
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/axm-hub-consumer
+          AXM_HUB_ROOT="$GITHUB_WORKSPACE" node --test tests/city-browser-direct-remote-seat-integration.test.mjs
+
+  real-chromium-game-bridge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Checkout Local Game Hub consumer
+        uses: actions/checkout@v4
+      - name: Checkout exact City Multiplayer provider head
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.CITY_PROVIDER_REPO }}
+          ref: ${{ env.CITY_PROVIDER_HEAD }}
+          path: provider
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Pack and install reviewed provider for browser consumption
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C provider rev-parse HEAD)" = "$CITY_PROVIDER_HEAD"
+          rm -rf /tmp/axm-city-pack /tmp/axm-browser-consumer
+          mkdir -p /tmp/axm-city-pack /tmp/axm-browser-consumer/site /tmp/axm-browser-consumer/tests
+          printf '{"name":"axm-hub-browser-bridge-ci","private":true,"type":"module"}\n' > /tmp/axm-browser-consumer/package.json
+          npm pack ./provider/packages/browser-direct --pack-destination /tmp/axm-city-pack --json > /tmp/axm-city-pack.json
+          TGZ="$(node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/axm-city-pack.json","utf8"));process.stdout.write("/tmp/axm-city-pack/"+x[0].filename)')"
+          npm install --prefix /tmp/axm-browser-consumer --offline --ignore-scripts --no-audit --no-fund "$TGZ"
+          npm install --prefix /tmp/axm-browser-consumer --ignore-scripts --no-audit --no-fund playwright@1.63.0
+          cp /tmp/axm-browser-consumer/node_modules/axm-city-browser-direct/manual_webrtc.mjs /tmp/axm-browser-consumer/site/manual_webrtc.mjs
+          cp integrations/city-browser-direct/robo-pong-remote-seat.mjs /tmp/axm-browser-consumer/site/robo-pong-remote-seat.mjs
+          cp tests/city-browser-direct-remote-seat.chromium.mjs /tmp/axm-browser-consumer/tests/
+          cat > /tmp/axm-browser-consumer/site/test_harness.html <<'HTML'
+          <!doctype html>
+          <meta charset="utf-8">
+          <title>AXM Local Game Hub browser-direct remote seat harness</title>
+          <script type="module">
+            import * as cityBrowserDirect from './manual_webrtc.mjs';
+            import * as bridge from './robo-pong-remote-seat.mjs';
+            window.cityBrowserDirect = cityBrowserDirect;
+            window.bridge = bridge;
+            window.AXM_READY = true;
+          </script>
+          HTML
+          node - <<'NODE'
+          const fs = require('fs');
+          const crypto = require('crypto');
+          const installed = fs.readFileSync('/tmp/axm-browser-consumer/node_modules/axm-city-browser-direct/manual_webrtc.mjs');
+          const served = fs.readFileSync('/tmp/axm-browser-consumer/site/manual_webrtc.mjs');
+          const provenance = JSON.parse(fs.readFileSync('/tmp/axm-browser-consumer/node_modules/axm-city-browser-direct/PROVENANCE.json', 'utf8'));
+          const digest = crypto.createHash('sha256').update(served).digest('hex');
+          if (!installed.equals(served)) throw new Error('served provider bytes differ from installed package bytes');
+          if (provenance.providerSource.sha256 !== digest) throw new Error('served provider bytes do not match provenance');
+          NODE
+      - name: Install Chromium for real DataChannel proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/axm-browser-consumer
+          npx playwright install --with-deps chromium
+      - name: Installed provider -> real Chromium DataChannel -> real game input
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/axm-browser-consumer
+          AXM_HUB_ROOT="$GITHUB_WORKSPACE" AXM_BROWSER_BRIDGE_SITE=/tmp/axm-browser-consumer/site node tests/city-browser-direct-remote-seat.chromium.mjs
