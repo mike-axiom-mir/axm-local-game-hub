@@ -1,0 +1,44 @@
+name: Managed runtime environment boundary
+
+on:
+  push:
+    branches:
+      - 'automation/truth-sentinel-managed-runtime-env-20260910'
+  pull_request:
+    paths:
+      - 'server.cjs'
+      - 'lib/managed-runtime-env.cjs'
+      - 'tests/managed-runtime-env.test.cjs'
+      - 'FILE_INTEGRITY_AMENDMENTS.json'
+      - 'tools/verify-file-integrity.cjs'
+      - '.github/workflows/managed-runtime-env.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  managed-runtime-env:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Runtime identity
+        run: |
+          node --version
+          git rev-parse HEAD
+      - name: Syntax
+        run: |
+          node --check server.cjs
+          node --check tests/managed-runtime-env.test.cjs
+          if [ -f lib/managed-runtime-env.cjs ]; then node --check lib/managed-runtime-env.cjs; fi
+      - name: Existing sealed distribution evidence
+        run: node tools/verify-file-integrity.cjs .
+      - name: Real managed-child environment regression
+        run: node --test tests/managed-runtime-env.test.cjs
