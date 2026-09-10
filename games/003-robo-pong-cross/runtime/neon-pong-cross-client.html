@@ -16,7 +16,12 @@
 .relay-coach[hidden],.relay-edge-cue[hidden],.relay-controller-cue[hidden]{display:none}.relay-coach small{display:block;color:#75a58a;font:700 8px "Cascadia Mono",Consolas,monospace;letter-spacing:.17em}.relay-coach strong{display:block;margin-top:5px;color:var(--mint);font:700 12px "Cascadia Mono",Consolas,monospace;letter-spacing:.09em}.relay-coach.armed{border-color:rgba(240,189,99,.62);box-shadow:0 12px 36px rgba(0,0,0,.38),0 0 32px rgba(240,189,99,.13)}.relay-coach.armed strong{color:var(--amber)}.relay-chain{display:flex;justify-content:center;gap:5px;margin-top:8px}.relay-link{min-width:68px;padding:5px 7px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.2);color:#647889;font:700 8px "Cascadia Mono",Consolas,monospace;letter-spacing:.08em}.relay-link.filled{border-color:rgba(105,220,154,.55);color:#dff9e9;background:rgba(105,220,154,.09)}
 .relay-edge-cue{pointer-events:none;position:absolute;z-index:7;padding:5px 7px;border:1px solid var(--relay-seat-color,#69dc9a);background:rgba(3,8,15,.82);color:var(--relay-seat-color,#69dc9a);box-shadow:0 0 18px color-mix(in srgb,var(--relay-seat-color,#69dc9a) 22%,transparent);font:700 8px "Cascadia Mono",Consolas,monospace;letter-spacing:.1em;white-space:nowrap}.relay-edge-top{top:3.5%;left:50%;transform:translateX(-50%)}.relay-edge-bottom{bottom:3.5%;left:50%;transform:translateX(-50%)}.relay-edge-left{left:3.5%;top:50%;transform:translateY(-50%) rotate(-90deg)}.relay-edge-right{right:3.5%;top:50%;transform:translateY(-50%) rotate(90deg)}
 .relay-controller-cue{padding:11px 12px;border:1px solid rgba(105,220,154,.5);background:rgba(105,220,154,.07);color:var(--mint);text-align:center;font:700 10px/1.35 "Cascadia Mono",Consolas,monospace;letter-spacing:.09em}.relay-controller-cue.armed{border-color:rgba(240,189,99,.58);background:rgba(240,189,99,.08);color:var(--amber)}
-@media(max-width:760px){.relay-coach,.relay-edge-cue{display:none!important}.relay-controller-cue{align-self:end}}@media(prefers-reduced-motion:reduce){.relay-coach,.relay-edge-cue,.relay-controller-cue{transition:none!important}}@media(prefers-contrast:more){.relay-coach,.relay-controller-cue,.relay-link.filled{border-color:currentColor;background:#030711}}@supports not (backdrop-filter:blur(2px)){.relay-coach{background:#06101b}}
+.cross-impact{pointer-events:none;position:absolute;z-index:9;inset:0;display:grid;place-items:center;opacity:0;transition:opacity .08s linear}.cross-impact.active{opacity:1}.cross-impact-ring{width:25%;aspect-ratio:1;border:3px solid var(--impact-color,var(--mint));border-radius:50%;box-shadow:0 0 24px color-mix(in srgb,var(--impact-color,var(--mint)) 55%,transparent),inset 0 0 22px color-mix(in srgb,var(--impact-color,var(--mint)) 28%,transparent);animation:cross-impact-ring .72s cubic-bezier(.12,.72,.2,1) both}.cross-impact-copy{position:absolute;left:50%;top:59%;transform:translate(-50%,-50%);min-width:190px;padding:7px 10px;border:1px solid color-mix(in srgb,var(--impact-color,var(--mint)) 70%,transparent);background:rgba(2,7,14,.86);box-shadow:0 8px 28px rgba(0,0,0,.42);text-align:center;color:var(--impact-color,var(--mint));font:700 9px/1.35 "Cascadia Mono",Consolas,monospace;letter-spacing:.1em}.cross-impact-copy strong{display:block;font-size:13px;letter-spacing:.12em}.cross-impact-copy small{display:block;margin-top:3px;color:#d5e2ec;font:700 8px/1.3 "Cascadia Mono",Consolas,monospace;letter-spacing:.08em}.cross-impact.warden{--impact-color:var(--mint)}.cross-impact.core{--impact-color:var(--danger)}.cross-impact-phone{display:none}
+@keyframes cross-impact-ring{0%{transform:scale(.48);opacity:1}72%{opacity:.78}100%{transform:scale(1.32);opacity:0}}
+@media(max-width:760px){.relay-coach,.relay-edge-cue,.cross-impact{display:none!important}.relay-controller-cue{align-self:end}.cross-impact-phone{pointer-events:none;position:fixed;z-index:45;left:50%;bottom:132px;transform:translateX(-50%) translateY(7px);width:min(360px,calc(100% - 28px));padding:10px 12px;border:1px solid var(--impact-color,var(--mint));background:rgba(3,8,15,.95);box-shadow:0 12px 34px rgba(0,0,0,.48),0 0 20px color-mix(in srgb,var(--impact-color,var(--mint)) 16%,transparent);opacity:0;text-align:center;color:var(--impact-color,var(--mint));font:700 10px/1.35 "Cascadia Mono",Consolas,monospace;letter-spacing:.09em;transition:opacity .1s linear,transform .16s ease}.player-view .cross-impact-phone{display:block}.cross-impact-phone.active{opacity:1;transform:translateX(-50%) translateY(0)}.cross-impact-phone.warden{--impact-color:var(--mint)}.cross-impact-phone.core{--impact-color:var(--danger)}.cross-impact-phone strong{display:block;font-size:12px}.cross-impact-phone small{display:block;margin-top:3px;color:#d5e2ec;font-size:8px}}
+@media(prefers-reduced-motion:reduce){.relay-coach,.relay-edge-cue,.relay-controller-cue,.cross-impact,.cross-impact-phone{transition:none!important}.cross-impact-ring{animation:none!important;transform:scale(1);opacity:.72}}
+@media(prefers-contrast:more){.relay-coach,.relay-controller-cue,.relay-link.filled,.cross-impact-copy,.cross-impact-phone{border-color:currentColor;background:#030711}.cross-impact-ring{box-shadow:none}}
+@supports not (backdrop-filter:blur(2px)){.relay-coach{background:#06101b}}
   </style>
 </head>
 <body data-theme="aetherglass" data-axm-surface="game" data-effects="balanced" data-motion="full">
@@ -76,6 +81,7 @@
   if (root && root.document) api.mount(root.document, root);
 })(typeof window !== 'undefined' ? window : null, function () {
   'use strict';
+  var impactTimer = null;
   function safePlayers(state) { return state && state.players && typeof state.players === 'object' ? state.players : {}; }
   function relayTeamIds(state) { var players = safePlayers(state); return Object.keys(players).filter(function (id) { var member = players[id] || {}; return member.participant === true && member.team === 'relay'; }); }
   function playerLabel(state, id) { var member = safePlayers(state)[id] || {}; return member.name || id.toUpperCase(); }
@@ -103,12 +109,32 @@
     } else if (current && armed) controllerAction = 'RELAY ARMED · DRIVE THE LIGHT INTO THE WARDEN';
     return { visible: phaseVisible, armed: armed, required: required, chain: chain, eligible: eligible, teamIds: teamIds, action: action, controllerAction: controllerAction, chainLabels: chain.map(function (id) { return playerLabel(state, id).toUpperCase(); }), sides: eligible.map(function (id) { var member = safePlayers(state)[id] || {}; return { id: id, side: member.side || '', label: playerLabel(state, id).toUpperCase(), color: member.color || '' }; }) };
   }
+  function finiteNumber(value) { var number = Number(value); return Number.isFinite(number) ? number : null; }
+  function deriveImpact(previous, next) {
+    if (!previous || !next || previous.playMode !== 'coop' || next.playMode !== 'coop' || !previous.mission || !next.mission) return { visible: false };
+    if (previous.arenaId && next.arenaId && previous.arenaId !== next.arenaId) return { visible: false };
+    if (['running', 'paused', 'gameover'].indexOf(next.phase) < 0) return { visible: false };
+    var fields = [{ key: 'boss', max: 'bossMax', kind: 'warden', noun: 'WARDEN' }, { key: 'core', max: 'coreMax', kind: 'core', noun: 'CORE' }];
+    for (var index = 0; index < fields.length; index += 1) {
+      var field = fields[index];
+      var before = finiteNumber(previous.mission[field.key]);
+      var after = finiteNumber(next.mission[field.key]);
+      var max = finiteNumber(next.mission[field.max]);
+      if (before == null || after == null || max == null || max <= 0 || after < 0 || after > max || before <= after) continue;
+      var amount = before - after;
+      var relayReset = Array.isArray(next.mission.relayChain) && next.mission.relayChain.length === 0 && next.mission.relayArmed !== true;
+      return { visible: true, kind: field.kind, amount: amount, remaining: after, max: max, label: field.noun + ' HIT · -' + amount, detail: after + ' / ' + max + ' ' + field.noun + (relayReset ? ' · RELAY RESET' : '') };
+    }
+    return { visible: false };
+  }
   function buildCoach(document) {
     var arena = document.getElementById('arenaShell');
     if (!arena || document.getElementById('relayCoach')) return;
     var panel = document.createElement('section');
     panel.id = 'relayCoach'; panel.className = 'relay-coach'; panel.hidden = true; panel.setAttribute('aria-live', 'polite'); panel.innerHTML = '<small>RELAY COORDINATION</small><strong id="relayCoachAction">WAITING</strong><div class="relay-chain" id="relayCoachChain"></div>'; arena.appendChild(panel);
     ['top','right','bottom','left'].forEach(function (side) { var cue = document.createElement('div'); cue.className = 'relay-edge-cue relay-edge-' + side; cue.dataset.side = side; cue.hidden = true; cue.setAttribute('aria-hidden','true'); arena.appendChild(cue); });
+    var impact = document.createElement('div'); impact.id = 'crossImpact'; impact.className = 'cross-impact'; impact.setAttribute('role', 'status'); impact.setAttribute('aria-live', 'polite'); impact.innerHTML = '<div class="cross-impact-ring" aria-hidden="true"></div><div class="cross-impact-copy"><strong id="crossImpactLabel"></strong><small id="crossImpactDetail"></small></div>'; arena.appendChild(impact);
+    var phoneImpact = document.createElement('div'); phoneImpact.id = 'crossImpactPhone'; phoneImpact.className = 'cross-impact-phone'; phoneImpact.setAttribute('role', 'status'); phoneImpact.setAttribute('aria-live', 'polite'); phoneImpact.innerHTML = '<strong id="crossImpactPhoneLabel"></strong><small id="crossImpactPhoneDetail"></small>'; document.body.appendChild(phoneImpact);
     var controllerPanel = document.getElementById('controllerPanel'); var directionHint = document.getElementById('directionHint');
     if (controllerPanel && directionHint) { var controllerCue = document.createElement('div'); controllerCue.id = 'relayControllerCue'; controllerCue.className = 'relay-controller-cue'; controllerCue.hidden = true; controllerCue.setAttribute('role','status'); controllerCue.setAttribute('aria-live','polite'); controllerPanel.insertBefore(controllerCue, directionHint); }
   }
@@ -119,13 +145,23 @@
     Array.prototype.forEach.call(document.querySelectorAll('.relay-edge-cue'), function (cue) { var match = view.sides && view.sides.find(function (entry) { return entry.side === cue.dataset.side; }); cue.hidden = !view.visible || !match; cue.textContent = match ? match.label + ' · NEXT' : ''; cue.style.setProperty('--relay-seat-color', match && match.color ? match.color : '#69dc9a'); });
     var controllerCue = document.getElementById('relayControllerCue'); if (controllerCue) { controllerCue.hidden = !view.visible || !playerId || playerId === 'screen'; controllerCue.classList.toggle('armed', !!view.armed); controllerCue.textContent = view.controllerAction || ''; } return view;
   }
+  function renderImpact(document, view, root) {
+    if (!view || !view.visible) return view;
+    var arenaImpact = document.getElementById('crossImpact'); var phoneImpact = document.getElementById('crossImpactPhone');
+    [arenaImpact, phoneImpact].forEach(function (node) { if (!node) return; node.classList.remove('warden', 'core', 'active'); void node.offsetWidth; node.classList.add(view.kind, 'active'); });
+    var pairs = [['crossImpactLabel', view.label], ['crossImpactDetail', view.detail], ['crossImpactPhoneLabel', view.label], ['crossImpactPhoneDetail', view.detail]];
+    pairs.forEach(function (pair) { var node = document.getElementById(pair[0]); if (node) node.textContent = pair[1]; });
+    if (impactTimer) root.clearTimeout(impactTimer);
+    impactTimer = root.setTimeout(function () { [arenaImpact, phoneImpact].forEach(function (node) { if (node) node.classList.remove('active'); }); impactTimer = null; }, 1050);
+    return view;
+  }
   function mount(document, root) {
     if (!document || !root || !root.location) return; buildCoach(document); var params = new URLSearchParams(root.location.search || ''); var rawPlayer = params.get('player') || ''; var playerId = /^p[1-4]$/.test(rawPlayer) ? rawPlayer : 'screen'; var base = root.location.pathname.indexOf('/games/003') === 0 ? '/games/003' : ''; var lastState = null;
-    function accept(state) { lastState = state; render(document, state, playerId); }
+    function accept(state) { var previous = lastState; lastState = state; render(document, state, playerId); var impact = deriveImpact(previous, state); if (impact.visible) renderImpact(document, impact, root); }
     if (typeof root.EventSource === 'function') { var events = new root.EventSource(base + '/events?room=AXM1'); events.onmessage = function (event) { try { accept(JSON.parse(event.data)); } catch (error) {} }; }
     if (typeof root.fetch === 'function') { root.fetch(base + '/state?room=AXM1').then(function (response) { return response.json(); }).then(accept).catch(function () {}); root.setInterval(function () { if (lastState && lastState.phase === 'running') return; root.fetch(base + '/state?room=AXM1').then(function (response) { return response.json(); }).then(accept).catch(function () {}); }, 1800); }
   }
-  return { derive: derive, render: render, mount: mount, relayTeamIds: relayTeamIds };
+  return { derive: derive, deriveImpact: deriveImpact, render: render, renderImpact: renderImpact, mount: mount, relayTeamIds: relayTeamIds };
 });
   </script>
   <script src="neon-pong-cross.js"></script>
