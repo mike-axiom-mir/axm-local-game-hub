@@ -1,0 +1,34 @@
+{
+  "schema": "axm.local-game-hub.anomaly-garden-static-consumer/v0.1",
+  "consumer": {
+    "repository": "mike-axiom-mir/axm-local-game-hub",
+    "mode": "explicit-local-checkout",
+    "entry": "integrations/anomaly-garden-static/bridge.cjs"
+  },
+  "provider": {
+    "repository": "mike-axiom-mir/axm-anomaly-garden",
+    "revision": "e9af55a1d1494f3d4f639e16b3bb06279ae8c4ea",
+    "packageName": "axm-anomaly-garden",
+    "version": "0.16.0",
+    "browserEntry": "index.html"
+  },
+  "runtime": {
+    "host": "127.0.0.1",
+    "transport": "loopback-http-static",
+    "externalNetworkAllowed": false,
+    "accountRequired": false,
+    "cloudRequired": false,
+    "aiRequired": false,
+    "providerCheckoutRequired": true
+  },
+  "authority": {
+    "automaticProviderDiscovery": false,
+    "automaticDownload": false,
+    "automaticInstall": false,
+    "catalogMutation": false,
+    "gameStateMutation": false,
+    "providerSourceMutation": false,
+    "merge": false,
+    "canon": false
+  }
+}
