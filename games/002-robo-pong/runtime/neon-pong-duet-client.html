@@ -10,15 +10,22 @@
   <link rel="stylesheet" href="neon-pong-duet.css">
   <style id="duet-serve-feedback-style">
     .serve-cue{--serve-progress:0;pointer-events:none;position:absolute;z-index:8;left:50%;top:36%;display:grid;place-items:center;gap:8px;transform:translate(-50%,-50%);color:#edf6ff;text-align:center;filter:drop-shadow(0 10px 24px rgba(0,0,0,.55))}
-    .serve-cue[hidden],.controller-serve-status[hidden]{display:none}
+    .serve-cue[hidden],.controller-serve-status[hidden],.controller-return-status[hidden]{display:none}
     .serve-dial{position:relative;display:grid;place-items:center;width:112px;height:112px;border-radius:50%;background:conic-gradient(#46d7e7 calc(var(--serve-progress) * 1turn),rgba(70,215,231,.12) 0);box-shadow:0 0 38px rgba(70,215,231,.16)}
     .serve-dial::before{content:"";position:absolute;inset:7px;border:1px solid rgba(70,215,231,.34);border-radius:50%;background:rgba(3,8,15,.9);box-shadow:inset 0 0 28px rgba(70,215,231,.08)}
     .serve-dial strong{position:relative;z-index:1;font:800 31px/1 "Cascadia Mono",Consolas,monospace;letter-spacing:-.04em;color:#fff}
     .serve-cue small{padding:6px 10px;border:1px solid rgba(70,215,231,.22);background:rgba(3,8,15,.72);color:#91a8bb;font:700 9px "Cascadia Mono",Consolas,monospace;letter-spacing:.16em}
     .controller-serve-status{display:block;margin-top:9px;color:#46d7e7;font:800 10px "Cascadia Mono",Consolas,monospace;letter-spacing:.12em}
-    @media(max-width:760px){.serve-cue{display:none}.controller-serve-status{font-size:11px}}
-    @media(prefers-reduced-motion:reduce){.serve-cue{filter:none}.serve-dial{box-shadow:none}}
-    @media(prefers-contrast:more){.serve-dial{background:conic-gradient(#edf6ff calc(var(--serve-progress) * 1turn),#34495a 0)}.serve-dial::before{border-color:#edf6ff}.controller-serve-status{color:#edf6ff}}
+    .return-impact{--impact-color:#46d7e7;pointer-events:none;position:absolute;z-index:9;left:50%;top:50%;width:0;height:0;opacity:0;transform:translate(-50%,-50%);color:var(--impact-color);filter:drop-shadow(0 0 18px var(--impact-color));transition:opacity .08s linear}
+    .return-impact.show{opacity:1}
+    .return-impact-ring{position:absolute;left:50%;top:50%;width:56px;height:56px;border:4px solid currentColor;border-radius:50%;transform:translate(-50%,-50%) scale(.38);opacity:.95}
+    .return-impact.show .return-impact-ring{animation:return-impact-ring .52s cubic-bezier(.12,.72,.2,1) both}
+    .return-impact-label{position:absolute;left:50%;top:-58px;transform:translateX(-50%);white-space:nowrap;padding:6px 9px;border:1px solid currentColor;background:rgba(3,8,15,.84);color:#fff;font:800 10px "Cascadia Mono",Consolas,monospace;letter-spacing:.13em;text-shadow:0 0 12px var(--impact-color)}
+    .controller-return-status{display:block;margin-top:7px;padding-top:7px;border-top:1px solid color-mix(in srgb,var(--return-color,#46d7e7) 42%,transparent);color:var(--return-color,#46d7e7);font:800 10px "Cascadia Mono",Consolas,monospace;letter-spacing:.12em}
+    @keyframes return-impact-ring{0%{transform:translate(-50%,-50%) scale(.38);opacity:1;border-width:6px}72%{opacity:.72}100%{transform:translate(-50%,-50%) scale(1.8);opacity:0;border-width:2px}}
+    @media(max-width:760px){.serve-cue{display:none}.controller-serve-status,.controller-return-status{font-size:11px}}
+    @media(prefers-reduced-motion:reduce){.serve-cue{filter:none}.serve-dial{box-shadow:none}.return-impact{filter:none;transition:none}.return-impact.show .return-impact-ring{animation:none;transform:translate(-50%,-50%) scale(1);opacity:1}}
+    @media(prefers-contrast:more){.serve-dial{background:conic-gradient(#edf6ff calc(var(--serve-progress) * 1turn),#34495a 0)}.serve-dial::before{border-color:#edf6ff}.controller-serve-status{color:#edf6ff}.return-impact-ring{border-color:#fff}.return-impact-label,.controller-return-status{color:#fff;border-color:#fff}}
   </style>
 </head>
 <body data-theme="aetherglass" data-axm-surface="game" data-effects="balanced" data-motion="full">
@@ -37,6 +44,11 @@
       <div class="serve-cue" id="serveCue" hidden aria-label="Light charging before serve">
         <span class="serve-dial" aria-hidden="true"><strong id="serveCountdown">0.0</strong></span>
         <small>LIGHT CHARGING · PREPARE</small>
+      </div>
+
+      <div class="return-impact" id="returnImpact" aria-hidden="true">
+        <span class="return-impact-ring"></span>
+        <strong class="return-impact-label" id="returnImpactLabel">RETURN</strong>
       </div>
 
       <section class="launch-panel" id="launchPanel" aria-labelledby="launchTitle">
@@ -63,7 +75,7 @@
 
     <section class="controller-panel" id="controllerPanel" hidden aria-label="Player controller">
       <div class="controller-identity"><small id="controllerSeat">P1 · DUET</small><strong id="controllerName">PLAYER</strong><span id="controllerStatus">READY</span></div>
-      <div class="controller-mission"><small id="controllerMissionLabel">CORE</small><strong id="controllerMissionValue">5 / 5</strong><span class="controller-serve-status" id="controllerServeStatus" hidden>LIGHT IN 0.0s</span></div>
+      <div class="controller-mission"><small id="controllerMissionLabel">CORE</small><strong id="controllerMissionValue">5 / 5</strong><span class="controller-serve-status" id="controllerServeStatus" hidden>LIGHT IN 0.0s</span><span class="controller-return-status" id="controllerReturnStatus" hidden aria-live="polite">RETURN CONFIRMED</span></div>
       <div class="ability-panel"><small>HELD ABILITY</small><strong id="powerName">RANDOM SPECIAL</strong><span id="powerState">READY</span></div>
     </section>
   </main>
@@ -86,6 +98,12 @@
       var cue = document.getElementById('serveCue');
       var countdown = document.getElementById('serveCountdown');
       var controller = document.getElementById('controllerServeStatus');
+      var impact = document.getElementById('returnImpact');
+      var impactLabel = document.getElementById('returnImpactLabel');
+      var controllerReturn = document.getElementById('controllerReturnStatus');
+      var lastImpactEventAt = 0;
+      var impactTimer = null;
+      var controllerImpactTimer = null;
 
       function renderServeReadiness(next) {
         var serveIn = next && next.phase === 'running' ? Math.max(0, Number(next.serveIn) || 0) : 0;
@@ -103,13 +121,61 @@
         cue.style.setProperty('--serve-progress', Math.min(1, serveIn / 1000));
       }
 
+      function returnOwner(next) {
+        if (!next || next.phase !== 'running' || !next.ball || !/^p[12]$/.test(next.ball.lastTouch || '')) return null;
+        var text = String(next.event || '');
+        if (!(/ RETURN$/.test(text) || / · RELAY \d+\/\d+$/.test(text))) return null;
+        return next.ball.lastTouch;
+      }
+
+      function renderReturnImpact(next) {
+        if (!impact || !impactLabel || !next) return;
+        var stamp = Number(next.eventAt) || 0;
+        if (!stamp || stamp === lastImpactEventAt) return;
+        lastImpactEventAt = stamp;
+        var owner = returnOwner(next);
+        if (!owner || Math.abs(Date.now() - stamp) > 1600) return;
+        var paddle = next.paddles && next.paddles[owner];
+        var width = Number(next.width);
+        var height = Number(next.height);
+        if (!paddle || !(width > 0) || !(height > 0) || !Number.isFinite(Number(paddle.x)) || !Number.isFinite(Number(paddle.y))) return;
+        var color = next.players && next.players[owner] && next.players[owner].color || (owner === 'p1' ? '#46d7e7' : '#ff3dd8');
+        var relay = / · RELAY \d+\/\d+$/.test(String(next.event || ''));
+        var name = next.players && next.players[owner] && next.players[owner].name || owner.toUpperCase();
+        impact.style.left = Math.max(0, Math.min(100, Number(paddle.x) / width * 100)) + '%';
+        impact.style.top = Math.max(0, Math.min(100, Number(paddle.y) / height * 100)) + '%';
+        impact.style.setProperty('--impact-color', color);
+        impactLabel.textContent = String(name).toUpperCase() + (relay ? ' · RELAY TOUCH' : ' · RETURN');
+        impact.classList.remove('show');
+        void impact.offsetWidth;
+        impact.classList.add('show');
+        clearTimeout(impactTimer);
+        impactTimer = setTimeout(function () { impact.classList.remove('show'); }, 900);
+
+        if (!controllerReturn) return;
+        clearTimeout(controllerImpactTimer);
+        if (player !== owner) {
+          controllerReturn.hidden = true;
+          return;
+        }
+        controllerReturn.style.setProperty('--return-color', color);
+        controllerReturn.textContent = relay ? 'YOUR RELAY TOUCH CONFIRMED' : 'YOUR RETURN CONFIRMED';
+        controllerReturn.hidden = false;
+        controllerImpactTimer = setTimeout(function () { controllerReturn.hidden = true; }, 900);
+      }
+
+      function renderObservedState(next) {
+        renderServeReadiness(next);
+        renderReturnImpact(next);
+      }
+
       var events = new EventSource(base + '/events?room=AXM1');
       events.onmessage = function (event) {
-        try { renderServeReadiness(JSON.parse(event.data)); } catch (error) {}
+        try { renderObservedState(JSON.parse(event.data)); } catch (error) {}
       };
       fetch(base + '/state?room=AXM1')
         .then(function (response) { return response.json(); })
-        .then(renderServeReadiness)
+        .then(renderObservedState)
         .catch(function () {});
     })();
   </script>
