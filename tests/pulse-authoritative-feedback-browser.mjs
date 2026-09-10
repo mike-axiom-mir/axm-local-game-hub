@@ -51,13 +51,19 @@ async function waitForPhase(expected) {
 }
 
 const errors = [];
+const expectedConflictConsole = [];
 let browser;
 try {
   await waitForServer();
   browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   page.on('pageerror', error => errors.push(`pageerror: ${error.message}`));
-  page.on('console', message => { if (message.type() === 'error') errors.push(`console: ${message.text()}`); });
+  page.on('console', message => {
+    if (message.type() !== 'error') return;
+    const text = message.text();
+    if (/Failed to load resource: the server responded with a status of 409 \(Conflict\)/.test(text)) expectedConflictConsole.push(text);
+    else errors.push(`console: ${text}`);
+  });
   page.on('requestfailed', request => errors.push(`requestfailed: ${request.url()} · ${request.failure()?.errorText || 'unknown'}`));
 
   await page.goto(`${origin}/controller.html?room=AXM1&player=p1`, { waitUntil: 'domcontentloaded' });
@@ -117,16 +123,18 @@ try {
   if (desktopOverflow > 1) throw new Error(`desktop horizontal overflow: ${desktopOverflow}px`);
   await page.screenshot({ path: path.join(artifactDir, 'pulse-buffer-accepted-desktop.png'), fullPage: true });
 
+  if (expectedConflictConsole.length !== 1) throw new Error(`expected exactly one browser 409 console receipt, saw ${expectedConflictConsole.length}`);
   if (errors.length) throw new Error(errors.join('\n'));
   console.log(JSON.stringify({
     ok: true,
     surface: 'real Pulse Choir server + exact phone controller HTML/CSS/JS',
     authoritativeHold: 'countdown pulse -> HTTP 409 round-not-playing -> PULSE HELD',
     authoritativeBuffer: 'playing pulse -> HTTP 200 buffered:true -> BUFFER ACCEPTED',
+    expectedBrowser409ConsoleReceipts: expectedConflictConsole.length,
     bufferWindowMs: 240,
     mobile: mobileMetrics,
     desktopOverflowPx: desktopOverflow,
-    browserErrors: 0
+    unexpectedBrowserErrors: 0
   }, null, 2));
 } finally {
   if (browser) await browser.close();
