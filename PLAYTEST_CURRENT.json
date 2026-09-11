@@ -1,0 +1,47 @@
+{
+  "schema": "axm.playtest-current/v1",
+  "status": "DERIVED_NON_CANON_PLAYTEST",
+  "branch": "playtest/current",
+  "base_main": "3d228b2f6c6ac84c99a60bb74aba42145336f366",
+  "launcher": "OPEN_THIS_SATURDAY.cmd",
+  "human_test_guide": "SATURDAY_HUMAN_TEST.txt",
+  "policy": {
+    "main_is_not_rewritten": true,
+    "canon_authority_changed": false,
+    "one_click_full_build_required": true,
+    "last_known_good_preserved_on_integration_failure": true,
+    "github_knowledge_required_for_human_test": false
+  },
+  "included_sources": [
+    {
+      "repo": "mike-axiom-mir/axm-local-game-hub",
+      "pr": 4,
+      "head": "7c8f6053593b0361789f44e83625b4c7d57682c8",
+      "purpose": "host controller navigation and truthful runtime state"
+    },
+    {
+      "repo": "mike-axiom-mir/axm-local-game-hub",
+      "pr": 8,
+      "head": "dbe40533cacf67452cde0a2d5e1456ac99d28deb",
+      "purpose": "Lumenwake threat intent and ability readiness"
+    },
+    {
+      "repo": "mike-axiom-mir/axm-local-game-hub",
+      "pr": 14,
+      "head": "25e9d9280b67f3659cd0f94f1c7fe8e0580d8d95",
+      "purpose": "Cross relay guidance plus Warden/core consequence feedback"
+    },
+    {
+      "repo": "mike-axiom-mir/axm-local-game-hub",
+      "pr": 18,
+      "head": "088e9186891a10e71ea2c3e458d1923957dce440",
+      "purpose": "Duet serve readiness plus return confirmation"
+    },
+    {
+      "repo": "mike-axiom-mir/axm-local-game-hub",
+      "pr": 20,
+      "head": "8fa1988cb069b4e70b21481baac13f378357f64c",
+      "purpose": "Pulse Choir sync readiness plus authoritative press feedback"
+    }
+  ]
+}
