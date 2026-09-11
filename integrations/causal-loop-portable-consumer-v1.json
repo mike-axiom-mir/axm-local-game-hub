@@ -1,0 +1,61 @@
+{
+  "schema": "axm.capability-consumer/v1",
+  "consumer": {
+    "repository": "mike-axiom-mir/axm-local-game-hub",
+    "runtime": "node >=18"
+  },
+  "requires": {
+    "capabilityId": "axm.causal-loop.train-platform.process/v1",
+    "transport": "ndjson-stdio",
+    "requestSchema": "axm.causal-loop.process-request/v1",
+    "responseSchema": "axm.causal-loop.process-response/v1",
+    "engineSignature": "6cefb89e614353a1289f1661dc08d950f8c9b89dea218d5670fa5ae056c334b9"
+  },
+  "testedProvider": {
+    "repository": "mike-axiom-mir/axm-casual-loop",
+    "pullRequest": 17,
+    "headSha": "b14c4fad2af9f1843394c05d21a78df791c757ef",
+    "processPrerequisite": {
+      "pullRequest": 8,
+      "headSha": "cb2793fbb48efd750670bd9d08abe5a0bfa233df"
+    },
+    "python": ">=3.11"
+  },
+  "consumerPrerequisite": {
+    "pullRequest": 13,
+    "headSha": "339156d99a752845587698f396c1a2e749ccaebe",
+    "relationship": "reuse-existing-live-descriptor-run-and-replay-verification-boundary"
+  },
+  "distribution": {
+    "format": "python-zipapp",
+    "extension": ".pyz",
+    "portableSchema": "axm.causal-loop.portable-process/v1",
+    "callerPinnedSha256": true,
+    "privateStagedCopyBeforeExecution": true,
+    "sourceCheckoutRequired": false,
+    "networkRequired": false,
+    "thirdPartyRuntimeDependencies": false
+  },
+  "invocation": {
+    "explicit": true,
+    "scenarioInput": "stdin-json",
+    "command": "node integrations/causal-loop-portable/consumer.cjs --artifact /absolute/causal-loop-process.pyz --sha256 <sha256> --python python3"
+  },
+  "authority": {
+    "automaticDownload": false,
+    "automaticInstall": false,
+    "automaticSelection": false,
+    "automaticExecution": false,
+    "catalogMutation": false,
+    "gameMutation": false,
+    "merge": false,
+    "canon": false
+  },
+  "truthBoundary": {
+    "sha256AuthenticatesProducer": false,
+    "portableProviderIsSandboxed": false,
+    "descriptorAndReplayAgreementProvesAuthorship": false,
+    "callerMustSelectArtifactAndDigest": true,
+    "providerSourceCopiedIntoConsumer": false
+  }
+}
