@@ -50,9 +50,11 @@ jobs:
           path: .provider/axm-casual-loop
 
       - name: Assert provider identity and focused portable contract
+        shell: bash
         run: |
+          set -euo pipefail
           test "$(git -C .provider/axm-casual-loop rev-parse HEAD)" = "b14c4fad2af9f1843394c05d21a78df791c757ef"
-          python .provider/axm-casual-loop/tests/test_portable_process.py -v
+          (cd .provider/axm-casual-loop && python tests/test_portable_process.py -v)
 
       - name: Build and provider-verify deterministic artifact
         shell: bash
