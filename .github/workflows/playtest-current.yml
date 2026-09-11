@@ -1,0 +1,38 @@
+name: Current playtest full-build gate
+
+on:
+  pull_request:
+    paths:
+      - 'app.js'
+      - 'server.cjs'
+      - 'catalog.json'
+      - 'games/**'
+      - 'tools/playtest-smoke.cjs'
+      - 'OPEN_THIS_SATURDAY.cmd'
+      - 'PLAYTEST_CURRENT.json'
+      - 'SATURDAY_HUMAN_TEST.txt'
+      - '.github/workflows/playtest-current.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  full-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax-check current launch surface
+        run: |
+          node --check server.cjs
+          node --check app.js
+          node --check games/006-lumenwake/runtime/lumenwake-core.cjs
+          node --check games/012-pulse-choir/runtime/pulse-feedback.js
+          node --check games/012-pulse-choir/runtime/sync-readiness.js
+          node --check tools/playtest-smoke.cjs
+      - name: Launch every current game through the real Hub
+        run: node tools/playtest-smoke.cjs
