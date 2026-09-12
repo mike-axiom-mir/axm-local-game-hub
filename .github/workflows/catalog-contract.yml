@@ -1,0 +1,25 @@
+name: Catalog contract
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Verify catalog projection
+        run: node lib/catalog-contract.cjs
+      - name: Run contract regression tests
+        run: node --test tests/catalog-contract.test.cjs
