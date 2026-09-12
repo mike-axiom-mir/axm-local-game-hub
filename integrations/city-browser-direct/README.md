@@ -36,11 +36,22 @@ whether the input is accepted. An accepted input can affect live game state in
 the same way as an ordinary local controller input; the bridge does not gain a
 separate game-mutation API.
 
+Replay state is deliberately owned by the caller's application session, not by
+one WebRTC peer object. Replacing a failed/disconnected peer therefore must
+reuse the same `sequenceState`. An admission without that explicit state fails
+closed with `REPLAY_STATE_REQUIRED`.
+
+The sequence is consumed **before** the bridge crosses the game-submission
+side-effect boundary. If the game changed state but its acknowledgement was
+lost, the same sequence cannot be retried through a replacement peer and apply
+the input a second time. A definitely rejected or unavailable submission also
+consumes that sequence; the sender must advance to a newer sequence.
+
 ## Consumer shape
 
 Import the reviewed provider module and this adapter into the **local host
-browser**. Then create the host peer and explicitly admit only the seat(s) you
-intend to expose:
+browser**. Create one caller-owned sequence state for the application session,
+then reuse it whenever the direct peer is replaced:
 
 ```js
 import * as cityBrowserDirect from "./manual_webrtc.mjs";
@@ -48,7 +59,13 @@ import {
   RemoteSeatAdmission,
   createLoopbackRoboPongSubmitter,
   createRemoteSeatPeer,
+  createRemoteSeatSequenceState,
 } from "./robo-pong-remote-seat.mjs";
+
+const sequenceState = createRemoteSeatSequenceState({
+  sessionId: "a caller-chosen application session id",
+  allowedPlayers: ["p1"],
+});
 
 const peer = createRemoteSeatPeer(cityBrowserDirect);
 const offerToken = await peer.createOffer({ expiresInSeconds: 600 });
@@ -59,6 +76,7 @@ const admission = new RemoteSeatAdmission({
   peer,
   sessionId: "a caller-chosen application session id",
   allowedPlayers: ["p1"],
+  sequenceState,
   submitInput: createLoopbackRoboPongSubmitter({
     baseUrl: "http://127.0.0.1:8793/",
   }),
@@ -66,13 +84,24 @@ const admission = new RemoteSeatAdmission({
 
 // Deliberate receive/admit step; no background auto-admission is created.
 const receipt = await admission.receiveOnce();
+
+// If the direct peer is replaced, construct the next admission with the same
+// sequenceState. sequenceState.snapshot() returns an inspectable JSON-safe
+// continuation record if the host chooses to store it explicitly.
 ```
 
 The remote side creates input with `createSeatInputEnvelope(...)` and sends it
 through `sendRemoteSeatInput(...)`. Every envelope binds the exact game/build,
 caller-chosen application session, selected seat, and a strictly increasing
 per-seat sequence number. Replayed/out-of-order input is rejected before the
-local game endpoint is called.
+local game endpoint is called, including after direct-peer replacement when the
+same caller-owned sequence state is reused.
+
+A sequence-state snapshot is schema/game/build/session/seat checked when
+restored. It is not signed, freshness-authenticated, or automatically persisted.
+Restoring an old-but-valid snapshot can therefore reopen older sequence
+numbers. Process-crash-safe persistence and anti-rollback storage are outside
+this bridge's demonstrated guarantee.
 
 ## Why the local endpoint is loopback-only
 
@@ -91,6 +120,12 @@ browser, prove honest input, prove internet/NAT reachability, or grant a player
 a different seat. Manual signaling tokens can expose network candidates to the
 person receiving them.
 
+The caller-owned sequence state demonstrates replay continuity across a
+replacement direct peer while that state remains available. It does not prove
+process-restart durability or freshness of a restored snapshot. Because sequence
+consumption happens before game submission, an ambiguous outcome fails closed
+against duplicate application but can intentionally sacrifice that one input.
+
 `iceServers: []` remains deliberate. Direct routing can fail, especially across
 NAT/CGNAT/firewalls; `DIRECT_CONNECTION_UNAVAILABLE` is an honest outcome. No
 relay is silently introduced.
@@ -102,7 +137,9 @@ current state.
 
 ## MergeAgent revalidation
 
-On 2026-09-12 this lane was retargeted onto the consolidated Local Game Hub
-technical main line. This documentation-only reconciliation commit exists to
-force fresh pull-request verification against that current base; it does not
-widen the bridge's runtime authority or default activation surface.
+On 2026-09-12 this stacked replay-continuity lane was merged with the
+consolidated Local Game Hub technical main line before integration review. That
+preserves the original regression/repair history while ensuring inherited
+workflows exercise the actual combined repository. This reconciliation does not
+add a relay, widen seat authority, modify the canonical four-game catalog, or
+turn the bridge on by default.
