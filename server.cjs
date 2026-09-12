@@ -7,6 +7,7 @@ const http = require('http');
 const os = require('os');
 const path = require('path');
 const { terminateChild } = require('./lib/runtime-process.cjs');
+const { RuntimeTransitionQueue } = require('./lib/runtime-transition-queue.cjs');
 
 const ROOT = __dirname;
 const CATALOG = JSON.parse(fs.readFileSync(path.join(ROOT, 'catalog.json'), 'utf8'));
@@ -26,6 +27,7 @@ const MIME = {
 
 let active = null;
 let shuttingDown = false;
+const runtimeTransitions = new RuntimeTransitionQueue();
 
 function privateLanAddress() {
   const candidates = [];
@@ -156,7 +158,7 @@ function activeView() {
   };
 }
 
-async function stopActive(reason) {
+async function stopActiveUnlocked(reason) {
   if (!active) return null;
   const current = active;
   await terminateChild(current.child);
@@ -164,10 +166,14 @@ async function stopActive(reason) {
   return { gameId: current.game.id, reason: reason || 'host-stop' };
 }
 
-async function startGame(gameId) {
+function stopActive(reason) {
+  return runtimeTransitions.run(() => stopActiveUnlocked(reason));
+}
+
+async function startGameUnlocked(gameId) {
   const game = CATALOG.games.find(item => item.id === String(gameId || ''));
   if (!game) throw new Error('unknown game package');
-  await stopActive('next-game-selected');
+  await stopActiveUnlocked('next-game-selected');
   const port = GAME_PORT_BASE + Number(game.portOffset || 0);
   const entry = containedGameEntry(game);
   const players = roster(game.defaultHumanSeats);
@@ -223,9 +229,13 @@ async function startGame(gameId) {
     return activeView();
   } catch (error) {
     const diagnostic = logTail.join(' | ').slice(0, 1600);
-    await stopActive('launch-failed');
+    await stopActiveUnlocked('launch-failed');
     throw new Error(error.message + (diagnostic ? ' · ' + diagnostic : ''));
   }
+}
+
+function startGame(gameId) {
+  return runtimeTransitions.run(() => startGameUnlocked(gameId));
 }
 
 function hubInfo() {
