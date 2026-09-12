@@ -1,0 +1,40 @@
+{
+  "schema": "axm.integration-binding/v0.1",
+  "status": "EXPERIMENTAL",
+  "consumer": {
+    "repository": "mike-axiom-mir/axm-local-game-hub",
+    "baseCommit": "3d228b2f6c6ac84c99a60bb74aba42145336f366",
+    "game": "axm.local-game-hub.robo-pong-cross",
+    "gameBuild": "0.1.1-cross",
+    "admission": "POST /input?player=p1..p4"
+  },
+  "provider": {
+    "repository": "mike-axiom-mir/axm-city-multiplayer",
+    "pullRequest": 18,
+    "headCommit": "256f670d832633159a3d91b9e4f522a438e966b4",
+    "package": "axm-city-browser-direct",
+    "packageVersion": "0.1.0",
+    "capability": "axm.browser-direct/v1",
+    "providerSourceCommit": "4f317c7c3e1b163a48dcbff3ea612bc04846cb1a"
+  },
+  "bridge": {
+    "schema": "axm.local-game-hub.remote-seat-input/v0.1",
+    "transport": "WebRTC-DataChannel",
+    "signaling": "manual-copy-paste",
+    "relayFallback": false,
+    "accountRequired": false,
+    "providerInstallAutomatic": false,
+    "seatAssignmentAutomatic": false,
+    "remoteInputSequenceRequired": true,
+    "gameEndpoint": "loopback-http-only"
+  },
+  "authority": {
+    "inputSubmission": "EXPLICIT_SELECTED_SEAT_ONLY",
+    "gameRuleMutation": false,
+    "gamePackageMutation": false,
+    "automaticInstall": false,
+    "automaticProviderSelection": false,
+    "merge": false,
+    "canon": false
+  }
+}
