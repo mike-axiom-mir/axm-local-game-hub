@@ -1,0 +1,46 @@
+name: Pulse Choir checkpoint integrity
+
+on:
+  pull_request:
+    paths:
+      - "games/012-pulse-choir/**"
+      - "tests/pulse-checkpoint-integrity.test.cjs"
+      - "tests/pulse-checkpoint-runtime.test.cjs"
+      - "FILE_INTEGRITY_AMENDMENTS.json"
+      - "tools/verify-file-integrity.cjs"
+      - ".github/workflows/pulse-checkpoint-integrity.yml"
+  push:
+    branches: [main]
+    paths:
+      - "games/012-pulse-choir/**"
+      - "tests/pulse-checkpoint-integrity.test.cjs"
+      - "tests/pulse-checkpoint-runtime.test.cjs"
+      - "FILE_INTEGRITY_AMENDMENTS.json"
+      - "tools/verify-file-integrity.cjs"
+      - ".github/workflows/pulse-checkpoint-integrity.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Syntax
+        run: |
+          node --check games/012-pulse-choir/runtime/checkpoint-store.js
+          node --check games/012-pulse-choir/runtime/server.js
+      - name: Checkpoint integrity regressions
+        run: node tests/pulse-checkpoint-integrity.test.cjs
+      - name: Real runtime recovery regressions
+        run: node tests/pulse-checkpoint-runtime.test.cjs
+      - name: Verify sealed distribution plus amendments
+        run: node tools/verify-file-integrity.cjs .
