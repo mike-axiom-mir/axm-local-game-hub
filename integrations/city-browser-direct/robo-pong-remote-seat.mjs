@@ -1,12 +1,14 @@
 const PROVIDER_ID = "axm.browser-direct/v1";
 const BRIDGE_SCHEMA = "axm.local-game-hub.remote-seat-input/v0.1";
 const RECEIPT_SCHEMA = "axm.local-game-hub.remote-seat-admission/v0.1";
+const SEQUENCE_STATE_SCHEMA = "axm.local-game-hub.remote-seat-sequence-state/v0.1";
 const GAME_ID = "axm.local-game-hub.robo-pong-cross";
 const GAME_BUILD = "0.1.1-cross";
 const MAX_ENVELOPE_BYTES = 4096;
 const PLAYER_IDS = new Set(["p1", "p2", "p3", "p4"]);
 const ENVELOPE_KEYS = ["build", "gameId", "input", "player", "schema", "sequence", "sessionId"];
 const INPUT_KEYS = ["left", "power", "right"];
+const SEQUENCE_STATE_KEYS = ["allowedPlayers", "build", "consumedThrough", "gameId", "schema", "sessionId"];
 
 export class RemoteSeatBridgeError extends Error {
   constructor(code, message) {
@@ -20,12 +22,12 @@ function fail(code, message) {
   throw new RemoteSeatBridgeError(code, message);
 }
 
-function exactKeys(value, expected, label) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) fail("INVALID_REMOTE_INPUT", `${label} must be an object`);
+function exactKeys(value, expected, label, code = "INVALID_REMOTE_INPUT") {
+  if (!value || typeof value !== "object" || Array.isArray(value)) fail(code, `${label} must be an object`);
   const actual = Object.keys(value).sort();
   const wanted = [...expected].sort();
   if (actual.length !== wanted.length || actual.some((key, index) => key !== wanted[index])) {
-    fail("INVALID_REMOTE_INPUT", `${label} fields do not match the v0.1 contract`);
+    fail(code, `${label} fields do not match the expected contract`);
   }
 }
 
@@ -46,6 +48,84 @@ async function sha256Hex(text) {
   if (!globalThis.crypto?.subtle) fail("CRYPTO_UNAVAILABLE", "Web Crypto SHA-256 is unavailable");
   const digest = await globalThis.crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function normalizeAllowedPlayers(values) {
+  const selected = new Set(values || []);
+  if (!selected.size) fail("SEAT_NOT_ADMITTED", "at least one explicit remote seat must be admitted");
+  for (const player of selected) if (!PLAYER_IDS.has(player)) fail("SEAT_NOT_ADMITTED", "allowed remote seats must be p1-p4");
+  return selected;
+}
+
+function sortedPlayers(values) {
+  return [...values].sort();
+}
+
+function samePlayers(left, right) {
+  const a = sortedPlayers(left);
+  const b = sortedPlayers(right);
+  return a.length === b.length && a.every((player, index) => player === b[index]);
+}
+
+class RemoteSeatSequenceState {
+  constructor({ sessionId, allowedPlayers, snapshot } = {}) {
+    requiredText(sessionId, "sessionId");
+    this.sessionId = sessionId;
+    this.allowedPlayers = normalizeAllowedPlayers(allowedPlayers);
+    this.consumedThrough = new Map(sortedPlayers(this.allowedPlayers).map((player) => [player, 0]));
+    if (snapshot !== undefined) this.restore(snapshot);
+  }
+
+  restore(snapshot) {
+    exactKeys(snapshot, SEQUENCE_STATE_KEYS, "remote seat sequence state", "INVALID_REPLAY_STATE");
+    if (snapshot.schema !== SEQUENCE_STATE_SCHEMA || snapshot.gameId !== GAME_ID || snapshot.build !== GAME_BUILD) {
+      fail("REPLAY_STATE_MISMATCH", "remote seat sequence state targets a different contract or game build");
+    }
+    if (snapshot.sessionId !== this.sessionId) {
+      fail("REPLAY_STATE_MISMATCH", "remote seat sequence state targets a different application session");
+    }
+    if (!Array.isArray(snapshot.allowedPlayers) || !samePlayers(snapshot.allowedPlayers, this.allowedPlayers)) {
+      fail("REPLAY_STATE_MISMATCH", "remote seat sequence state does not match the explicitly admitted seats");
+    }
+    const players = sortedPlayers(this.allowedPlayers);
+    exactKeys(snapshot.consumedThrough, players, "remote seat sequence counters", "INVALID_REPLAY_STATE");
+    for (const player of players) {
+      const value = snapshot.consumedThrough[player];
+      if (!Number.isSafeInteger(value) || value < 0) {
+        fail("INVALID_REPLAY_STATE", "remote seat sequence counters must be non-negative safe integers");
+      }
+      this.consumedThrough.set(player, value);
+    }
+  }
+
+  assertScope({ sessionId, allowedPlayers }) {
+    if (sessionId !== this.sessionId || !samePlayers(allowedPlayers, this.allowedPlayers)) {
+      fail("REPLAY_STATE_MISMATCH", "remote seat sequence state scope does not match this admission");
+    }
+  }
+
+  consume(player, sequence) {
+    if (!this.allowedPlayers.has(player)) fail("SEAT_NOT_ADMITTED", "remote input targets a seat not admitted by this replay state");
+    const previous = this.consumedThrough.get(player) || 0;
+    if (sequence <= previous) fail("REPLAYED_INPUT", "remote input sequence is not newer than the last consumed input");
+    this.consumedThrough.set(player, sequence);
+  }
+
+  snapshot() {
+    const players = sortedPlayers(this.allowedPlayers);
+    return {
+      schema: SEQUENCE_STATE_SCHEMA,
+      gameId: GAME_ID,
+      build: GAME_BUILD,
+      sessionId: this.sessionId,
+      allowedPlayers: players,
+      consumedThrough: Object.fromEntries(players.map((player) => [player, this.consumedThrough.get(player) || 0])),
+    };
+  }
+}
+
+export function createRemoteSeatSequenceState(options) {
+  return new RemoteSeatSequenceState(options);
 }
 
 export function assertCityBrowserDirectProvider(provider) {
@@ -82,6 +162,13 @@ export function describeRemoteSeatBridge(provider) {
     seatAssignmentAutomatic: false,
     relayFallback: false,
     accountRequired: false,
+    replayProtection: {
+      stateSchema: SEQUENCE_STATE_SCHEMA,
+      callerOwned: true,
+      required: true,
+      peerReplacementSafeWhenStateReused: true,
+      consumesBeforeGameSubmission: true,
+    },
     authority: {
       inputSubmission: "EXPLICIT_SELECTED_SEAT_ONLY",
       gameRuleMutation: false,
@@ -141,28 +228,26 @@ export function sendRemoteSeatInput(peer, envelope) {
   peer.send(envelope);
 }
 
-function normalizeAllowedPlayers(values) {
-  const selected = new Set(values || []);
-  if (!selected.size) fail("SEAT_NOT_ADMITTED", "at least one explicit remote seat must be admitted");
-  for (const player of selected) if (!PLAYER_IDS.has(player)) fail("SEAT_NOT_ADMITTED", "allowed remote seats must be p1-p4");
-  return selected;
-}
-
 async function sealReceipt(body) {
   const canonical = stableJson(body);
   return { ...body, receiptSha256: await sha256Hex(canonical) };
 }
 
 export class RemoteSeatAdmission {
-  constructor({ peer, sessionId, allowedPlayers, submitInput }) {
+  constructor({ peer, sessionId, allowedPlayers, sequenceState, submitInput }) {
     if (!peer || typeof peer.receive !== "function") fail("PROVIDER_UNAVAILABLE", "browser-direct peer receive boundary is unavailable");
     requiredText(sessionId, "sessionId");
     if (typeof submitInput !== "function") fail("INVALID_CONFIGURATION", "submitInput must be a function");
+    const selectedPlayers = normalizeAllowedPlayers(allowedPlayers);
+    if (!(sequenceState instanceof RemoteSeatSequenceState)) {
+      fail("REPLAY_STATE_REQUIRED", "a caller-owned remote seat sequence state is required");
+    }
+    sequenceState.assertScope({ sessionId, allowedPlayers: selectedPlayers });
     this.peer = peer;
     this.sessionId = sessionId;
-    this.allowedPlayers = normalizeAllowedPlayers(allowedPlayers);
+    this.allowedPlayers = selectedPlayers;
+    this.sequenceState = sequenceState;
     this.submitInput = submitInput;
-    this.lastSequence = new Map();
   }
 
   async receiveOnce(timeoutMs = 10000) {
@@ -170,14 +255,21 @@ export class RemoteSeatAdmission {
       sessionId: this.sessionId,
       allowedPlayers: this.allowedPlayers,
     });
-    const previous = this.lastSequence.get(envelope.player) || 0;
-    if (envelope.sequence <= previous) fail("REPLAYED_INPUT", "remote input sequence is not newer than the last admitted input");
 
-    const result = await this.submitInput({ player: envelope.player, input: envelope.input });
+    // Consume before crossing the game side-effect boundary. If submission has an
+    // ambiguous outcome, retrying the same sequence would risk applying it twice.
+    this.sequenceState.consume(envelope.player, envelope.sequence);
+
+    let result;
+    try {
+      result = await this.submitInput({ player: envelope.player, input: envelope.input });
+    } catch (error) {
+      if (error instanceof RemoteSeatBridgeError) throw error;
+      fail("GAME_INPUT_UNAVAILABLE", "Robo Pong Cross input admission failed after the sequence was consumed");
+    }
     if (!result || result.ok !== true || result.player !== envelope.player) {
       fail("GAME_INPUT_REJECTED", "Robo Pong Cross did not admit the selected seat input");
     }
-    this.lastSequence.set(envelope.player, envelope.sequence);
 
     const body = {
       schema: RECEIPT_SCHEMA,
@@ -247,6 +339,7 @@ export const REMOTE_SEAT_CONTRACT = Object.freeze({
   providerId: PROVIDER_ID,
   bridgeSchema: BRIDGE_SCHEMA,
   receiptSchema: RECEIPT_SCHEMA,
+  sequenceStateSchema: SEQUENCE_STATE_SCHEMA,
   gameId: GAME_ID,
   gameBuild: GAME_BUILD,
   maxEnvelopeBytes: MAX_ENVELOPE_BYTES,

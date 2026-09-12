@@ -26,6 +26,9 @@
     "providerInstallAutomatic": false,
     "seatAssignmentAutomatic": false,
     "remoteInputSequenceRequired": true,
+    "replayState": "caller-owned-required",
+    "sequenceStateSchema": "axm.local-game-hub.remote-seat-sequence-state/v0.1",
+    "sequenceConsumedBeforeGameSubmission": true,
     "gameEndpoint": "loopback-http-only"
   },
   "authority": {
