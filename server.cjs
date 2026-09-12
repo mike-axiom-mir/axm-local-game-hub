@@ -6,6 +6,7 @@ const fs = require('fs');
 const http = require('http');
 const os = require('os');
 const path = require('path');
+const { CAPABILITY_ID, inspectProvider, runVerifiedScenario } = require('./lib/causal-loop-provider.cjs');
 const { terminateChild } = require('./lib/runtime-process.cjs');
 const { RuntimeTransitionQueue } = require('./lib/runtime-transition-queue.cjs');
 
@@ -252,6 +253,13 @@ function hubInfo() {
     hubUrl: 'http://127.0.0.1:' + HUB_PORT + '/',
     lanHubUrl: lanAddress ? 'http://' + lanAddress + ':' + HUB_PORT + '/' : null,
     games: CATALOG.games.length,
+    externalCapabilities: [{
+      capabilityId: CAPABILITY_ID,
+      optional: true,
+      configured: Boolean(process.env.AXM_CAUSAL_LOOP_ENTRY),
+      discoveryPath: '/api/capabilities/causal-loop',
+      runPath: '/api/capabilities/causal-loop/run'
+    }],
     active: activeView()
   };
 }
@@ -288,6 +296,13 @@ const server = http.createServer(async (request, response) => {
     if (request.method === 'GET' && url.pathname === '/api/health') return json(response, 200, hubInfo());
     if (request.method === 'GET' && url.pathname === '/api/catalog') return json(response, 200, CATALOG);
     if (request.method === 'GET' && url.pathname === '/api/status') return json(response, 200, { ok: true, active: activeView(), lanMode: LAN_MODE });
+    if (request.method === 'GET' && url.pathname === '/api/capabilities/causal-loop') {
+      return json(response, 200, await inspectProvider({ cwd: ROOT }));
+    }
+    if (request.method === 'POST' && url.pathname === '/api/capabilities/causal-loop/run') {
+      const body = await readBody(request);
+      return json(response, 200, await runVerifiedScenario(body, { cwd: ROOT }));
+    }
     if (request.method === 'POST' && url.pathname === '/api/launch') {
       const body = await readBody(request);
       return json(response, 200, { ok: true, active: await startGame(body.gameId) });
