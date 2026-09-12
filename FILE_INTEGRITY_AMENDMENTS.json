@@ -33,15 +33,28 @@
     },
     {
       "path": "server.cjs",
-      "sourceCommit": "ac24de253dfea2210d11e9e3c31c4130abdc3958",
-      "reason": "Preserve the serialized runtime lifecycle and expose the optional Causal Loop discovery and verified-run routes without silently rewriting the proof-of-start seal.",
+      "sourceCommit": "48b5c6abca3d1377fabeba6f0c20ed244567f04b",
+      "reason": "Preserve the serialized runtime lifecycle and optional Causal Loop routes while adding bounded managed-child environment inheritance and propagating the Hub local-versus-LAN host policy without silently rewriting the proof-of-start seal.",
       "previous": {
         "bytes": 12678,
         "sha256": "95ed9b12d166f625febdc04e3325828f89d851931e52c74bdd0c423f86ed4987"
       },
       "current": {
-        "bytes": 13560,
-        "sha256": "39adcd1246e36ee5994bcf79b2fb885e6743f8ca98b83e69d66a5f731032b99f"
+        "bytes": 13673,
+        "sha256": "788328e64bc6bdc24180dd19e9587301bcc276d9e92b6fc844c6e8102680cc73"
+      }
+    },
+    {
+      "path": "games/006-lumenwake/runtime/lumenwake-server.cjs",
+      "sourceCommit": "f99ffe0e19d1d732ad4d59ab9b02b44619a17dc0",
+      "reason": "Make the managed Lumenwake listener inherit the Hub's loopback-by-default / explicit-LAN authority while preserving its historical standalone fallback, without silently rewriting the proof-of-start seal.",
+      "previous": {
+        "bytes": 4151,
+        "sha256": "9b450a8d20e723694d1d28dbcf9500a70359d4e67d2f743eea9eaff0de6fa276"
+      },
+      "current": {
+        "bytes": 4198,
+        "sha256": "347640ca189a5b63bc22cd64716bc609071a2531677e0bfed5a56e0555fb2b6e"
       }
     }
   ]

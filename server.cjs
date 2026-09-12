@@ -9,6 +9,7 @@ const path = require('path');
 const { CAPABILITY_ID, inspectProvider, runVerifiedScenario } = require('./lib/causal-loop-provider.cjs');
 const { terminateChild } = require('./lib/runtime-process.cjs');
 const { RuntimeTransitionQueue } = require('./lib/runtime-transition-queue.cjs');
+const { buildManagedRuntimeEnv } = require('./lib/managed-runtime-env.cjs');
 
 const ROOT = __dirname;
 const CATALOG = JSON.parse(fs.readFileSync(path.join(ROOT, 'catalog.json'), 'utf8'));
@@ -181,10 +182,11 @@ async function startGameUnlocked(gameId) {
   const logTail = [];
   const child = childProcess.spawn(process.execPath, [entry], {
     cwd: path.dirname(entry),
-    env: Object.assign({}, process.env, {
+    env: buildManagedRuntimeEnv(process.env, {
       PORT: String(port),
       HOST,
       AXM_FOREST_HOST: HOST,
+      AXM_ROBO_PONG_HOST: HOST,
       AXM_PLAYERS_JSON: JSON.stringify(players),
       AXM_MANAGED_BY_GAME_HUB: '1',
       AXM_GAME_ID: game.id,
