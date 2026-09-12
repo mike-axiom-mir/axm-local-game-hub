@@ -9,17 +9,19 @@ it does not change Robo Pong Cross physics or seat rules.
 ## Exact provider
 
 - repository: `mike-axiom-mir/axm-city-multiplayer`
-- draft PR: `#18` — `Package the direct browser transport for clean local consumers`
-- exact provider-package head: `256f670d832633159a3d91b9e4f522a438e966b4`
+- historical evidence PR: `#18` — `Package the direct browser transport for clean local consumers`
+- exact provider-package head used by this proof: `256f670d832633159a3d91b9e4f522a438e966b4`
 - package: `axm-city-browser-direct@0.1.0`
 - capability: `axm.browser-direct/v1`
 - underlying reviewed browser transport head: `4f317c7c3e1b163a48dcbff3ea612bc04846cb1a`
 - license: Apache-2.0
 
-No provider bytes are vendored into this repository. The provider package must
-be deliberately obtained from that reviewed source/head (or a later head that
-is separately reviewed and adapted). Nothing here discovers, installs, or
-executes a provider automatically.
+The provider work was later consolidated into the City Multiplayer main line;
+this integration keeps its exact historical evidence pin so the published proof
+remains reproducible. No provider bytes are vendored into this repository. The
+provider package must be deliberately obtained from reviewed source bytes (or a
+later head that is separately reviewed and adapted). Nothing here discovers,
+installs, or executes a provider automatically.
 
 ## What the bridge actually does
 
@@ -94,5 +96,13 @@ NAT/CGNAT/firewalls; `DIRECT_CONNECTION_UNAVAILABLE` is an honest outcome. No
 relay is silently introduced.
 
 The bridge has no automatic provider selection/install, game-rule or package
-rewrite, merge, release, promotion, or CANON authority. Mike remains the merge
-and CANON gate.
+rewrite, merge, release, promotion, or CANON authority. Merge/integration is
+governed by the repository `AGENTS.md` root gate and evidence available at the
+current state.
+
+## MergeAgent revalidation
+
+On 2026-09-12 this lane was retargeted onto the consolidated Local Game Hub
+technical main line. This documentation-only reconciliation commit exists to
+force fresh pull-request verification against that current base; it does not
+widen the bridge's runtime authority or default activation surface.
