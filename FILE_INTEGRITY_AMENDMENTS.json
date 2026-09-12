@@ -56,6 +56,45 @@
         "bytes": 4198,
         "sha256": "347640ca189a5b63bc22cd64716bc609071a2531677e0bfed5a56e0555fb2b6e"
       }
+    },
+    {
+      "path": "games/012-pulse-choir/KNOWN_LIMITS.md",
+      "sourceCommit": "5fc95f2f7269299f5a393c26ec1c1b59c6efbbb6",
+      "reason": "Document the Pulse Choir v2 checkpoint integrity, hold, migration, and local quarantine boundaries without silently rewriting the proof-of-start seal.",
+      "previous": {
+        "bytes": 1727,
+        "sha256": "54321b41425cfe037a1db8f350cf051f1970a5f02370cfdd94fd1d50a69368be"
+      },
+      "current": {
+        "bytes": 1998,
+        "sha256": "836495950d6203669a135bc0b3a8ea0cbe08ed3d13be814c46f487ba2fe659ab"
+      }
+    },
+    {
+      "path": "games/012-pulse-choir/README_FIRST.md",
+      "sourceCommit": "5fc95f2f7269299f5a393c26ec1c1b59c6efbbb6",
+      "reason": "Document the explicit Pulse Choir checkpoint recovery and migration behavior without silently rewriting the proof-of-start seal.",
+      "previous": {
+        "bytes": 2473,
+        "sha256": "91e4241acc26907c3564eb63261ac19d14598705188f7efb780196885227da52"
+      },
+      "current": {
+        "bytes": 3471,
+        "sha256": "96fe27011ec080c3916fbb67e8d3d736c18f40502920315b017e82ab92dea79a"
+      }
+    },
+    {
+      "path": "games/012-pulse-choir/runtime/checkpoint-store.js",
+      "sourceCommit": "5fc95f2f7269299f5a393c26ec1c1b59c6efbbb6",
+      "reason": "Integrate the verified v2 checkpoint content binding, fail-closed write hold, legacy migration labeling, and explicit quarantine recovery without silently rewriting the proof-of-start seal.",
+      "previous": {
+        "bytes": 10762,
+        "sha256": "dce22259f07e7ef46d88342494baa9c237bb9a6c8767bda3201d9f7942673c46"
+      },
+      "current": {
+        "bytes": 17021,
+        "sha256": "a50aaec8c0722a31e720b0216b3f0d0436864dd557d9f540db91e656b19f3b2e"
+      }
     }
   ]
 }
