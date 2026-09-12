@@ -6,6 +6,10 @@ const fs = require('fs');
 const http = require('http');
 const os = require('os');
 const path = require('path');
+const { CAPABILITY_ID, inspectProvider, runVerifiedScenario } = require('./lib/causal-loop-provider.cjs');
+const { terminateChild } = require('./lib/runtime-process.cjs');
+const { RuntimeTransitionQueue } = require('./lib/runtime-transition-queue.cjs');
+const { buildManagedRuntimeEnv } = require('./lib/managed-runtime-env.cjs');
 
 const ROOT = __dirname;
 const CATALOG = JSON.parse(fs.readFileSync(path.join(ROOT, 'catalog.json'), 'utf8'));
@@ -25,6 +29,7 @@ const MIME = {
 
 let active = null;
 let shuttingDown = false;
+const runtimeTransitions = new RuntimeTransitionQueue();
 
 function privateLanAddress() {
   const candidates = [];
@@ -155,35 +160,33 @@ function activeView() {
   };
 }
 
-async function stopActive(reason) {
+async function stopActiveUnlocked(reason) {
   if (!active) return null;
   const current = active;
-  active = null;
-  if (current.child && current.child.exitCode === null && !current.child.killed) {
-    current.child.kill('SIGTERM');
-    await Promise.race([
-      new Promise(resolve => current.child.once('exit', resolve)),
-      new Promise(resolve => setTimeout(resolve, 900))
-    ]);
-    if (current.child.exitCode === null && !current.child.killed) current.child.kill('SIGKILL');
-  }
+  await terminateChild(current.child);
+  if (active === current) active = null;
   return { gameId: current.game.id, reason: reason || 'host-stop' };
 }
 
-async function startGame(gameId) {
+function stopActive(reason) {
+  return runtimeTransitions.run(() => stopActiveUnlocked(reason));
+}
+
+async function startGameUnlocked(gameId) {
   const game = CATALOG.games.find(item => item.id === String(gameId || ''));
   if (!game) throw new Error('unknown game package');
-  await stopActive('next-game-selected');
+  await stopActiveUnlocked('next-game-selected');
   const port = GAME_PORT_BASE + Number(game.portOffset || 0);
   const entry = containedGameEntry(game);
   const players = roster(game.defaultHumanSeats);
   const logTail = [];
   const child = childProcess.spawn(process.execPath, [entry], {
     cwd: path.dirname(entry),
-    env: Object.assign({}, process.env, {
+    env: buildManagedRuntimeEnv(process.env, {
       PORT: String(port),
       HOST,
       AXM_FOREST_HOST: HOST,
+      AXM_ROBO_PONG_HOST: HOST,
       AXM_PLAYERS_JSON: JSON.stringify(players),
       AXM_MANAGED_BY_GAME_HUB: '1',
       AXM_GAME_ID: game.id,
@@ -229,9 +232,13 @@ async function startGame(gameId) {
     return activeView();
   } catch (error) {
     const diagnostic = logTail.join(' | ').slice(0, 1600);
-    await stopActive('launch-failed');
+    await stopActiveUnlocked('launch-failed');
     throw new Error(error.message + (diagnostic ? ' · ' + diagnostic : ''));
   }
+}
+
+function startGame(gameId) {
+  return runtimeTransitions.run(() => startGameUnlocked(gameId));
 }
 
 function hubInfo() {
@@ -248,6 +255,13 @@ function hubInfo() {
     hubUrl: 'http://127.0.0.1:' + HUB_PORT + '/',
     lanHubUrl: lanAddress ? 'http://' + lanAddress + ':' + HUB_PORT + '/' : null,
     games: CATALOG.games.length,
+    externalCapabilities: [{
+      capabilityId: CAPABILITY_ID,
+      optional: true,
+      configured: Boolean(process.env.AXM_CAUSAL_LOOP_ENTRY),
+      discoveryPath: '/api/capabilities/causal-loop',
+      runPath: '/api/capabilities/causal-loop/run'
+    }],
     active: activeView()
   };
 }
@@ -284,6 +298,13 @@ const server = http.createServer(async (request, response) => {
     if (request.method === 'GET' && url.pathname === '/api/health') return json(response, 200, hubInfo());
     if (request.method === 'GET' && url.pathname === '/api/catalog') return json(response, 200, CATALOG);
     if (request.method === 'GET' && url.pathname === '/api/status') return json(response, 200, { ok: true, active: activeView(), lanMode: LAN_MODE });
+    if (request.method === 'GET' && url.pathname === '/api/capabilities/causal-loop') {
+      return json(response, 200, await inspectProvider({ cwd: ROOT }));
+    }
+    if (request.method === 'POST' && url.pathname === '/api/capabilities/causal-loop/run') {
+      const body = await readBody(request);
+      return json(response, 200, await runVerifiedScenario(body, { cwd: ROOT }));
+    }
     if (request.method === 'POST' && url.pathname === '/api/launch') {
       const body = await readBody(request);
       return json(response, 200, { ok: true, active: await startGame(body.gameId) });

@@ -1,7 +1,8 @@
 # Known limits
 
 - Physical phone/controller QA has not been performed.
-- Crash recovery is same-host and same-roster only. Checkpoints expire after 30 minutes by default; there is no cross-machine host migration.
+- Crash recovery is same-host and same-roster only. Checkpoints expire after 30 minutes by default; there is no cross-machine host migration. Rejected-byte quarantine is device-local and retained until a human removes it.
+- Checkpoint SHA-256 bindings detect accidental or untrusted mutation but do not authenticate who created a checkpoint. Valid legacy v1 state is explicitly labeled unsealed during migration.
 - There is no host migration, remote matchmaking, account identity, voice chat, or internet service.
 - AI is intentionally lightweight and deterministic; it does not claim human-like cooperation.
 - The LIVE CONDUCTOR is deterministic authored adaptation from bounded receipts, not a learning system or a claim that it understands the room’s emotions.

@@ -1,0 +1,41 @@
+name: Optional Causal Loop consumer
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify-causal-loop-consumer:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 22]
+        python: ['3.11', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout exact tested provider head
+        uses: actions/checkout@v4
+        with:
+          repository: mike-axiom-mir/axm-casual-loop
+          ref: cb2793fbb48efd750670bd9d08abe5a0bfa233df
+          path: .provider/axm-casual-loop
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Consumer contract and real HTTP round trip
+        env:
+          AXM_CAUSAL_LOOP_ENTRY: ${{ github.workspace }}/.provider/axm-casual-loop/scripts/causal_loop_ndjson.py
+          AXM_CAUSAL_LOOP_PYTHON: python
+        run: node --test tests/causal-loop-provider.test.cjs tests/causal-loop-http.test.cjs
+      - name: Inherited runtime lifecycle regressions
+        run: node --test tests/runtime-process.test.cjs tests/runtime-transition-serialization.test.cjs
+      - name: Verify frozen distribution evidence
+        run: node tools/verify-file-integrity.cjs .

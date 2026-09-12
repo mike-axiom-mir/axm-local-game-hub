@@ -2,7 +2,7 @@
   "schema": "axm.playtest-current/v1",
   "status": "DERIVED_NON_CANON_PLAYTEST",
   "branch": "playtest/current",
-  "base_main": "3d228b2f6c6ac84c99a60bb74aba42145336f366",
+  "base_main": "0521f96cd7abd319cb32be6e5e55fbf3b8a3709a",
   "launcher": "OPEN_THIS_SATURDAY.cmd",
   "human_test_guide": "SATURDAY_HUMAN_TEST.txt",
   "policy": {

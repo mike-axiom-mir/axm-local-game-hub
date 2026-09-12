@@ -1,0 +1,100 @@
+{
+  "schema": "axm.file-integrity-amendments/v1",
+  "base": {
+    "manifest": "FILE_INTEGRITY.json",
+    "gitBlobSha1": "8037eb5053664aed4c95770e5a20ce8046bfda8c"
+  },
+  "amendments": [
+    {
+      "path": "LICENSE_STATUS.md",
+      "sourceCommit": "5419ff48cc1fdf99b9719b82cac3b2b318ea9006",
+      "reason": "Preserve the intentional Apache-2.0 license-status alignment without silently rewriting the original proof-of-start seal.",
+      "previous": {
+        "bytes": 841,
+        "sha256": "84567ec1d85480b017aeb7fed0ee3ee969124e274996aedbcd6bbfc01885fdf0"
+      },
+      "current": {
+        "bytes": 692,
+        "sha256": "f45b278417a8f7524204d870501e395d7c2f7e3f02b0924ce2437310812cdf56"
+      }
+    },
+    {
+      "path": "README.md",
+      "sourceCommit": "ac24de253dfea2210d11e9e3c31c4130abdc3958",
+      "reason": "Document the optional Causal Loop consumer boundary and its explicit local configuration without silently rewriting the proof-of-start seal.",
+      "previous": {
+        "bytes": 2083,
+        "sha256": "8e4c116de4e678de5aeed33d0fbd89758f52e9574c286ca730e60d3af3a44502"
+      },
+      "current": {
+        "bytes": 3146,
+        "sha256": "142cbd94cd3376dfd7643074ef1975250286c07014f62f6aab94057121099d0e"
+      }
+    },
+    {
+      "path": "server.cjs",
+      "sourceCommit": "48b5c6abca3d1377fabeba6f0c20ed244567f04b",
+      "reason": "Preserve the serialized runtime lifecycle and optional Causal Loop routes while adding bounded managed-child environment inheritance and propagating the Hub local-versus-LAN host policy without silently rewriting the proof-of-start seal.",
+      "previous": {
+        "bytes": 12678,
+        "sha256": "95ed9b12d166f625febdc04e3325828f89d851931e52c74bdd0c423f86ed4987"
+      },
+      "current": {
+        "bytes": 13673,
+        "sha256": "788328e64bc6bdc24180dd19e9587301bcc276d9e92b6fc844c6e8102680cc73"
+      }
+    },
+    {
+      "path": "games/006-lumenwake/runtime/lumenwake-server.cjs",
+      "sourceCommit": "f99ffe0e19d1d732ad4d59ab9b02b44619a17dc0",
+      "reason": "Make the managed Lumenwake listener inherit the Hub's loopback-by-default / explicit-LAN authority while preserving its historical standalone fallback, without silently rewriting the proof-of-start seal.",
+      "previous": {
+        "bytes": 4151,
+        "sha256": "9b450a8d20e723694d1d28dbcf9500a70359d4e67d2f743eea9eaff0de6fa276"
+      },
+      "current": {
+        "bytes": 4198,
+        "sha256": "347640ca189a5b63bc22cd64716bc609071a2531677e0bfed5a56e0555fb2b6e"
+      }
+    },
+    {
+      "path": "games/012-pulse-choir/KNOWN_LIMITS.md",
+      "sourceCommit": "5fc95f2f7269299f5a393c26ec1c1b59c6efbbb6",
+      "reason": "Document the Pulse Choir v2 checkpoint integrity, hold, migration, and local quarantine boundaries without silently rewriting the proof-of-start seal.",
+      "previous": {
+        "bytes": 1727,
+        "sha256": "54321b41425cfe037a1db8f350cf051f1970a5f02370cfdd94fd1d50a69368be"
+      },
+      "current": {
+        "bytes": 1998,
+        "sha256": "836495950d6203669a135bc0b3a8ea0cbe08ed3d13be814c46f487ba2fe659ab"
+      }
+    },
+    {
+      "path": "games/012-pulse-choir/README_FIRST.md",
+      "sourceCommit": "5fc95f2f7269299f5a393c26ec1c1b59c6efbbb6",
+      "reason": "Document the explicit Pulse Choir checkpoint recovery and migration behavior without silently rewriting the proof-of-start seal.",
+      "previous": {
+        "bytes": 2473,
+        "sha256": "91e4241acc26907c3564eb63261ac19d14598705188f7efb780196885227da52"
+      },
+      "current": {
+        "bytes": 3471,
+        "sha256": "96fe27011ec080c3916fbb67e8d3d736c18f40502920315b017e82ab92dea79a"
+      }
+    },
+    {
+      "path": "games/012-pulse-choir/runtime/checkpoint-store.js",
+      "sourceCommit": "5fc95f2f7269299f5a393c26ec1c1b59c6efbbb6",
+      "reason": "Integrate the verified v2 checkpoint content binding, fail-closed write hold, legacy migration labeling, and explicit quarantine recovery without silently rewriting the proof-of-start seal.",
+      "previous": {
+        "bytes": 10762,
+        "sha256": "dce22259f07e7ef46d88342494baa9c237bb9a6c8767bda3201d9f7942673c46"
+      },
+      "current": {
+        "bytes": 17021,
+        "sha256": "a50aaec8c0722a31e720b0216b3f0d0436864dd557d9f540db91e656b19f3b2e"
+      }
+    }
+  ]
+}

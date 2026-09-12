@@ -1,0 +1,134 @@
+name: Causal Loop portable provider consumer
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  portable-consumer:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 22]
+        python: ['3.11', '3.13']
+    steps:
+      - name: Check out exact consumer head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Assert exact consumer identity
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Verify consumer contracts
+        run: |
+          node --check integrations/causal-loop-portable/consumer.cjs
+          node --check tests/causal-loop-portable-provider.test.cjs
+          node --test tests/causal-loop-provider.test.cjs tests/causal-loop-portable-provider.test.cjs
+
+      - name: Check out exact portable provider head
+        uses: actions/checkout@v4
+        with:
+          repository: mike-axiom-mir/axm-casual-loop
+          ref: b14c4fad2af9f1843394c05d21a78df791c757ef
+          path: .provider/axm-casual-loop
+
+      - name: Assert provider identity and focused portable contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C .provider/axm-casual-loop rev-parse HEAD)" = "b14c4fad2af9f1843394c05d21a78df791c757ef"
+          (cd .provider/axm-casual-loop && python tests/test_portable_process.py -v)
+
+      - name: Build and provider-verify deterministic artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          artifact="$RUNNER_TEMP/causal-loop-process.pyz"
+          rebuild="$RUNNER_TEMP/causal-loop-process-rebuild.pyz"
+          python .provider/axm-casual-loop/scripts/build_causal_loop_portable.py build --output "$artifact" > portable-build.json
+          python .provider/axm-casual-loop/scripts/build_causal_loop_portable.py build --output "$rebuild" > portable-rebuild.json
+          cmp "$artifact" "$rebuild"
+          python .provider/axm-casual-loop/scripts/build_causal_loop_portable.py verify "$artifact" > portable-provider-verify.json
+          digest="$(sha256sum "$artifact" | awk '{print $1}')"
+          printf 'ARTIFACT_PATH=%s\n' "$artifact" >> "$GITHUB_ENV"
+          printf 'ARTIFACT_SHA256=%s\n' "$digest" >> "$GITHUB_ENV"
+          printf '%s\n' "$digest" > artifact-sha256.txt
+
+      - name: Remove provider source checkout
+        run: |
+          rm -rf .provider/axm-casual-loop
+          test ! -e .provider/axm-casual-loop
+
+      - name: Consume only the caller-pinned portable artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > scenario.json <<'JSON'
+          {
+            "timedInfluences": [
+              {"atWave": 2, "action": "BLOCK_DOOR"},
+              {"atWave": 3, "action": "TRIGGER_ALARM"}
+            ],
+            "maxWaves": 64
+          }
+          JSON
+          env -u PYTHONPATH node integrations/causal-loop-portable/consumer.cjs \
+            --artifact "$ARTIFACT_PATH" \
+            --sha256 "$ARTIFACT_SHA256" \
+            --python python \
+            < scenario.json > portable-observation.json
+          env -u PYTHONPATH node integrations/causal-loop-portable/consumer.cjs \
+            --artifact "$ARTIFACT_PATH" \
+            --sha256 "$ARTIFACT_SHA256" \
+            --python python \
+            < scenario.json > portable-observation-repeat.json
+          cmp portable-observation.json portable-observation-repeat.json
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const value = JSON.parse(fs.readFileSync('portable-observation.json', 'utf8'));
+          if (value.schema !== 'axm.local-game-hub.causal-loop-portable-observation/v1') throw new Error('unexpected observation schema');
+          if (value.status !== 'PASS' || value.result.status !== 'PASS') throw new Error(`portable consumer did not PASS: ${JSON.stringify(value.error || value.result.error || null)}`);
+          if (value.provider.repository !== 'mike-axiom-mir/axm-casual-loop') throw new Error('provider repository drift');
+          if (value.provider.pullRequest !== 17 || value.provider.headSha !== 'b14c4fad2af9f1843394c05d21a78df791c757ef') throw new Error('provider lineage drift');
+          if (value.provider.artifactSha256 !== process.env.ARTIFACT_SHA256) throw new Error('artifact digest not retained');
+          if (value.provider.sourceCheckoutRequired !== false) throw new Error('source checkout dependency remained');
+          if (value.result.receiptHash !== value.result.verification.verifiedReceiptHash || value.result.receiptHash !== value.result.verification.replayedReceiptHash) throw new Error('run/replay receipt disagreement');
+          for (const key of ['automaticExecution', 'automaticSelection', 'installation', 'catalogMutation', 'gameMutation', 'merge', 'canon']) {
+            if (value.authority[key] !== false) throw new Error(`authority widened: ${key}`);
+          }
+          if (!/^[a-f0-9]{64}$/.test(value.observationSha256)) throw new Error('observation identity missing');
+          NODE
+          test ! -e .provider/axm-casual-loop
+
+      - name: Validate repository diff
+        run: git diff --check
+
+      - name: Publish portable consumer evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: causal-loop-portable-consumer-node-${{ matrix.node }}-python-${{ matrix.python }}
+          path: |
+            artifact-sha256.txt
+            portable-build.json
+            portable-rebuild.json
+            portable-provider-verify.json
+            scenario.json
+            portable-observation.json
+          if-no-files-found: error

@@ -1,0 +1,42 @@
+name: Runtime bind policy
+
+on:
+  pull_request:
+    paths:
+      - 'server.cjs'
+      - 'games/006-lumenwake/runtime/lumenwake-server.cjs'
+      - 'tests/runtime-bind-policy.test.cjs'
+      - 'FILE_INTEGRITY_AMENDMENTS.json'
+      - 'tools/verify-file-integrity.cjs'
+      - '.github/workflows/runtime-bind-policy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bind-policy:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Runtime identity
+        run: |
+          node --version
+          sha256sum server.cjs games/006-lumenwake/runtime/lumenwake-server.cjs
+          wc -c server.cjs games/006-lumenwake/runtime/lumenwake-server.cjs
+      - name: Syntax
+        run: |
+          node --check server.cjs
+          node --check games/006-lumenwake/runtime/lumenwake-server.cjs
+          node --check tests/runtime-bind-policy.test.cjs
+      - name: Real local-versus-LAN bind regression
+        run: node --test tests/runtime-bind-policy.test.cjs
+      - name: Sealed distribution evidence
+        run: node tools/verify-file-integrity.cjs .
