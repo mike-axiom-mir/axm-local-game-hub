@@ -20,7 +20,7 @@
     {
       "id": "manifest:006-lumenwake",
       "path": "games/006-lumenwake/game.manifest.json",
-      "canonical_sha256": "8d12bdb30293fef77ee9d8a86e71851f88dea97f967a3652ee8b620035c23584"
+      "canonical_sha256": "7df3cde0f003ce593fa850dd5106d712d820b3dfe84e707ce67cbc26192cba97"
     },
     {
       "id": "manifest:012-pulse-choir",
