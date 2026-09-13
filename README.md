@@ -3,6 +3,11 @@
 **EXPERIMENTAL proof of start** — a small, self-contained local game-night
 launcher from the AXM Collaboration Platform.
 
+> **Current public stage:** `main` is active experimental development beyond the
+> packaged `v0.1.0-proof-of-start` prerelease. That prerelease remains the last
+> packaged checkpoint; newer integrations and verification work on `main` are
+> not silently claimed to be present in its ZIP.
+
 One computer hosts the game. Friends or family can join supported games with
 phones on the same trusted Wi-Fi by scanning the visible seat QR codes.
 
@@ -42,7 +47,8 @@ Do not enable it on an untrusted public Wi-Fi network.
 
 ## Package truth
 
-- Current version: `0.1.0-proof-of-start`
+- Latest packaged prerelease: `0.1.0-proof-of-start`
+- Current `main`: active post-release experimental development
 - Runtime dependency: Node.js 18+ only
 - Active-game limit: one game at a time
 - Internet required while playing: no
