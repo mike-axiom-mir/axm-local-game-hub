@@ -45,7 +45,7 @@
     }
   },
   "package": {
-    "source_status": "clean-local-cc0-build",
-    "required_paths": ["README.md", "ASSET_LICENSES.md", "runtime/lumenwake-core.cjs", "runtime/lumenwake-server.cjs", "runtime/lumenwake-client.html", "runtime/assets/aurora-field.svg", "runtime/assets/lumenwake-mark.svg", "runtime/assets/lumenwake-logo.svg"]
+    "source_status": "clean-local-cc0-build-threat-and-ability-feedback-verified-physical-phone-qa-pending",
+    "required_paths": ["README.md", "ASSET_LICENSES.md", "runtime/lumenwake-core.cjs", "runtime/lumenwake-server.cjs", "runtime/lumenwake-client.html", "runtime/assets/aurora-field.svg", "runtime/assets/lumenwake-mark.svg", "runtime/assets/lumenwake-logo.svg", "tests/lumenwake-experience.test.cjs"]
   }
 }

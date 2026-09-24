@@ -1,0 +1,64 @@
+AXM SATURDAY HUMAN PLAYTEST
+===========================
+
+You do NOT need GitHub and you do NOT need to understand the code.
+
+1. Extract the current playtest ZIP.
+2. Double-click OPEN_THIS_SATURDAY.cmd.
+3. The local Game Hub opens in your browser.
+4. Pick a game and play it normally first.
+
+PASS A — BLIND HUMAN EXPERIENCE
+-------------------------------
+Before reading the AI claims below, play naturally for 5–10 minutes.
+Only note what you actually notice:
+- what feels better;
+- what feels confusing;
+- what feels fun or dead;
+- anything that looks broken;
+- anything you expected to understand but did not.
+
+PASS B — AI CLAIMS VS HUMAN REALITY
+-----------------------------------
+Now specifically check the current AI-verified upgrades.
+
+AXM Pong: Duet
+AI says the current test build has:
+- a visible pre-serve / light-charging cue instead of a silent pause;
+- clearer paddle-return impact on the shared screen;
+- the returning phone seat gets direct return confirmation.
+Human question: do you actually notice and understand those things while playing without hunting for them?
+
+AXM Pong: Cross
+AI says the current test build has:
+- clearer Relay Co-op handoffs showing who should touch next;
+- relay-ready state becomes obvious;
+- Warden/core damage gives an immediate visible consequence and remaining state;
+- relay reset after a consequence is readable.
+Human question: does a room of players understand what to do next, or is the AI overrating its own UI?
+
+Lumenwake
+AI says the current test build has:
+- visible Gloom target intent;
+- Pulse/Dash cooldown and readiness feedback;
+- the shared spectator screen no longer lies about controls it cannot use.
+Human question: does this actually make co-op decisions easier and the screen more truthful?
+
+Pulse Choir
+AI says the current test build has:
+- the shared screen shows sync time left plus who is ready / still waiting;
+- phone PULSE presses visibly distinguish held, buffered and locked/accepted outcomes;
+- server feedback survives long enough to read instead of vanishing instantly.
+Human question: during real play, can you tell what the room and your own press are doing without guessing?
+
+USE FOUR SIMPLE RESULTS
+-----------------------
+For anything the AI claims, mark it mentally as:
+1. NOTICED NATURALLY
+2. ONLY NOTICED AFTER LOOKING FOR IT
+3. DID NOT NOTICE / DID NOT WORK
+4. MADE THE GAME WORSE OR MORE CONFUSING
+
+That comparison is the point of this build. AI evidence says what should be there. Your play says whether it actually exists as a human experience.
+
+This branch is a derived playtest surface, not CANON. Main/release authority is unchanged.
